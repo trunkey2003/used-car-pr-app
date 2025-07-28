@@ -2,29 +2,32 @@ namespace usedcar;
 
 // EBAN - Purchase Requisition
 entity PurchaseRequisition {
-  key PurchaseRequisition       : String(10);  // BANFN - Unique identifier for the purchase requisition
-  key PurchaseReqnItem          : String(5);   // BNFPO - Item number of the requisition
-  Material                      : String(40);  // foreign key
-  Plant                         : String(4);   // foreign key
-  StorageLocation               : String(4);   // foreign key
-  PurchasingGroup               : String(3);   // foreign key
-  PurchaseRequisitionType       : String(4);   // foreign key
+  key PurchaseRequisition       : String(10);
+  key PurchaseReqnItem          : String(5);
+  Material                      : String(40);
+  Plant                         : String(4);
+  StorageLocation               : String(4);
+  PurchasingGroup               : String(3);
+  PurchaseRequisitionType       : String(4);
+  
 
-  Quantity                      : Decimal(13,3); // MENGE - Requested quantity
-  BaseUnit                      : String(3);     // MEINS - Unit of measure
-  DeliveryDate                  : Date;          // LFDAT - Desired delivery date
-  Requisitioner                 : String(12);    // AFNAM - Person requesting the material
-  ReleaseStatus                 : String(8);     // FRGZU - Approval status
-  RequisitionDate               : String(20);          // BADAT - Date of requisition creation
-  CreatedByUser                 : String(12);    // PREQ_NAME - Name of creator
+  Quantity                      : Decimal(13,3);
+  BaseUnit                      : String(3);
+  DeliveryDate                  : Date;
+  Requisitioner                 : String(12);
+  ReleaseStatus                 : String(8);
+  RequisitionDate               : String(20);
+  CreatedByUser                 : String(12);
 
+  // Existing associations
   toMaterial            : Association to MaterialMaster on toMaterial.Material = Material;
   toPlant               : Association to Plant on toPlant.Plant = Plant;
   toStorageLocation     : Association to StorageLocation on toStorageLocation.Plant = Plant and toStorageLocation.StorageLocation = StorageLocation;
   toPurchasingGroup     : Association to PurchasingGroup on toPurchasingGroup.PurchasingGroup = PurchasingGroup;
   toPurchasingDocType   : Association to PurchasingDocumentType on toPurchasingDocType.DocumentType = PurchaseRequisitionType;
+  toPurchasingInfoRecord : Association to PurchasingInfoRecord on toPurchasingInfoRecord.Material = Material;
 
-  AccountAssignments : Composition of many PurchaseRequisitionAccountAssignment on AccountAssignments.PurchaseRequisition = PurchaseRequisition and AccountAssignments.PurchaseReqnItem = PurchaseReqnItem; // 1:n
+  AccountAssignments : Composition of many PurchaseRequisitionAccountAssignment on AccountAssignments.PurchaseRequisition = PurchaseRequisition and AccountAssignments.PurchaseReqnItem = PurchaseReqnItem;
 }
 
 // EBKN - Purchase Requisition Account Assignment
@@ -48,6 +51,8 @@ entity MaterialMaster {
   CreationDate       : Date;       // ERSDA
 
   MaterialDescription       : Association to MaterialDescription on MaterialDescription.Material = Material; // 1:1
+
+  toPurchasingInfoRecords   : Association to many PurchasingInfoRecord on toPurchasingInfoRecords.Material = Material;
 }
 
 // MAKT - Material Descriptions
@@ -95,6 +100,9 @@ entity PurchasingInfoRecord {
   // Associations based on foreign key fields
   toMaterial : Association to MaterialMaster on toMaterial.Material = Material;
   toSupplier : Association to VendorMaster on toSupplier.Supplier = Supplier;
+
+  toPurchasingOrgInfo : Association to many PurchasingOrgInfoRecord on toPurchasingOrgInfo.PurchasingInfoRecord = PurchasingInfoRecord;
+
 }
 
 // EINE - Purchasing Info Record - Org Data
