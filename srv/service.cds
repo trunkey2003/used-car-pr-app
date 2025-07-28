@@ -1,7 +1,10 @@
 using { usedcar as uc } from '../db/data-model';
 
 service PRService {
-  entity PurchaseRequisition                as projection on uc.PurchaseRequisition;
+  entity PurchaseRequisition as projection on uc.PurchaseRequisition actions {
+    action approve() returns String;
+    action reject() returns String;
+  };
   entity PurchaseRequisitionAccountAssignment as projection on uc.PurchaseRequisitionAccountAssignment;
   entity MaterialMaster                     as projection on uc.MaterialMaster;
   entity MaterialDescription                as projection on uc.MaterialDescription;
