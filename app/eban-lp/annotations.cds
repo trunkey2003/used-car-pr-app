@@ -1,7 +1,6 @@
 using PRService as service from '../../srv/service';
 
 annotate service.PurchaseRequisition with @(
-    // FILTERS
     UI.SelectionFields               : [
         Material,
         Plant,
@@ -362,7 +361,24 @@ annotate service.PurchaseRequisition with @(
         Target: '@UI.FieldGroup#SupplierInfo'
     },
 ],
+    UI.Identification : [
+        {
+            $Type : 'UI.DataFieldForAction',
+            Action : 'PRService.approve',
+            Label : '{i18n>Approve}',
+            Determining : true,
+        },
+        {
+            $Type : 'UI.DataFieldForAction',
+            Action : 'PRService.reject',
+            Label : '{i18n>Reject}',
+            Determining : true,
+        },
+    ],
 );
+
+
+
 
 
 

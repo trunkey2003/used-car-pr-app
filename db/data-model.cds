@@ -1,18 +1,25 @@
 namespace usedcar;
+using { cuid, managed } from '@sap/cds/common';
+
 
 // EBAN - Purchase Requisition
-entity PurchaseRequisition {
+@odata.draft.enabled
+entity PurchaseRequisition : cuid, managed  {
   key PurchaseRequisition       : String(10);
   key PurchaseReqnItem          : String(5);
+  @mandatory
   Material                      : String(40);
+  @mandatory
   Plant                         : String(4);
   StorageLocation               : String(4);
+  @mandatory
   PurchasingGroup               : String(3);
   PurchaseRequisitionType       : String(4);
   
-
+  @mandatory
   Quantity                      : Decimal(13,3);
   BaseUnit                      : String(3);
+  @mandatory
   DeliveryDate                  : Date;
   Requisitioner                 : String(12);
   ReleaseStatus                 : String(8);
