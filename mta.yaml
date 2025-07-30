@@ -67,9 +67,37 @@ modules:
       - ns1ebanlp.zip
       name: ns1ebanlp
       target-path: app/
+    - artifacts:
+      - nsproject1.zip
+      name: nsproject1
+      target-path: app/
+    - artifacts:
+      - nsekkolp.zip
+      name: nsekkolp
+      target-path: app/
 - name: ns1ebanlp
   type: html5
   path: app/eban-lp
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+- name: nsproject1
+  type: html5
+  path: app/project1
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+- name: nsekkolp
+  type: html5
+  path: app/ekko-lp
   build-parameters:
     build-result: dist
     builder: custom

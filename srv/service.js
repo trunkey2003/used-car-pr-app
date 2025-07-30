@@ -16,7 +16,8 @@ module.exports = cds.service.impl(async function () {
       Plant: plantCode,
       StorageLocation: storageLocation,
       PurchasingGroup: group,
-      PurchaseRequisitionType
+      PurchaseRequisitionType,
+      AccountAssignments
     } = req.data;
 
     const db = cds.transaction(req);
@@ -62,15 +63,20 @@ module.exports = cds.service.impl(async function () {
         req.error(400, `Delivery Date must be today or a future date.`);
       }
 
-      const LIMIT = 500000; // AUD
+      let LIMIT = 0;
+      if (!AccountAssignments || !AccountAssignments.length || !(AccountAssignments[0].CostCenter)) {
+        req.error(400, `Missing AccountAssignments or CostCenter determine LIMIT.`);
+      } else {
+        LIMIT = parseFloat(AccountAssignments[0].CostCenter);
+      }
 
       const infoRecord = await db.run(
-          SELECT.one.from('usedcar.PurchasingInfoRecord').where({
-            Material
-          })
-        );
- 
-        if (!infoRecord || !infoRecord.PurchasingInfoRecord) {
+        SELECT.one.from('usedcar.PurchasingInfoRecord').where({
+          Material
+        })
+      );
+
+      if (!infoRecord || !infoRecord.PurchasingInfoRecord) {
         req.error(400, `Missing purchasingInfoRecord to determine NetPrice.`);
       }
 
@@ -85,7 +91,7 @@ module.exports = cds.service.impl(async function () {
       }
 
       const netPrice = parseFloat(eine.NetPrice);
-      const priceUnit = parseFloat(eine.PriceUnit || 1); 
+      const priceUnit = parseFloat(eine.PriceUnit || 1);
       const effectivePrice = netPrice / priceUnit;
       const totalValue = effectivePrice * quantity;
 

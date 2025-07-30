@@ -1,10 +1,9 @@
 namespace usedcar;
 using { cuid, managed } from '@sap/cds/common';
 
-
 // EBAN - Purchase Requisition
 @odata.draft.enabled
-entity PurchaseRequisition : cuid, managed  {
+entity PurchaseRequisition : cuid, managed {
   key PurchaseRequisition       : String(10);
   key PurchaseReqnItem          : String(5);
   @mandatory
@@ -27,14 +26,17 @@ entity PurchaseRequisition : cuid, managed  {
   CreatedByUser                 : String(12);
 
   // Existing associations
-  toMaterial            : Association to MaterialMaster on toMaterial.Material = Material;
-  toPlant               : Association to Plant on toPlant.Plant = Plant;
-  toStorageLocation     : Association to StorageLocation on toStorageLocation.Plant = Plant and toStorageLocation.StorageLocation = StorageLocation;
-  toPurchasingGroup     : Association to PurchasingGroup on toPurchasingGroup.PurchasingGroup = PurchasingGroup;
+  toMaterial            : Association to MaterialMaster      on toMaterial.Material          = Material;
+  toPlant               : Association to Plant               on toPlant.Plant               = Plant;
+  toStorageLocation     : Association to StorageLocation     on toStorageLocation.Plant     = Plant
+                                                                    and toStorageLocation.StorageLocation = StorageLocation;
+  toPurchasingGroup     : Association to PurchasingGroup     on toPurchasingGroup.PurchasingGroup = PurchasingGroup;
   toPurchasingDocType   : Association to PurchasingDocumentType on toPurchasingDocType.DocumentType = PurchaseRequisitionType;
-  toPurchasingInfoRecord : Association to PurchasingInfoRecord on toPurchasingInfoRecord.Material = Material;
+  toPurchasingInfoRecord: Association to PurchasingInfoRecord on toPurchasingInfoRecord.Material = Material;
 
-  AccountAssignments : Composition of many PurchaseRequisitionAccountAssignment on AccountAssignments.PurchaseRequisition = PurchaseRequisition and AccountAssignments.PurchaseReqnItem = PurchaseReqnItem;
+  AccountAssignments    : Composition of many PurchaseRequisitionAccountAssignment
+                           on AccountAssignments.PurchaseRequisition = PurchaseRequisition
+                          and AccountAssignments.PurchaseReqnItem    = PurchaseReqnItem;
 }
 
 // EBKN - Purchase Requisition Account Assignment
@@ -57,8 +59,8 @@ entity MaterialMaster {
   MaterialGroup      : String(9);  // MATKL
   CreationDate       : Date;       // ERSDA
 
-  MaterialDescription       : Association to MaterialDescription on MaterialDescription.Material = Material; // 1:1
-  toPurchasingInfoRecords   : Association to many PurchasingInfoRecord on toPurchasingInfoRecords.Material = Material;
+  MaterialDescription     : Association to MaterialDescription   on MaterialDescription.Material = Material; // 1:1
+  toPurchasingInfoRecords : Association to many PurchasingInfoRecord on toPurchasingInfoRecords.Material = Material;
 }
 
 // MAKT - Material Descriptions
@@ -71,7 +73,7 @@ entity MaterialDescription {
 // T001W - Plants/Branches
 entity Plant {
   key Plant     : String(4);  // WERKS
-  PlantName     : String(30); // NAME1t
+  PlantName     : String(30); // NAME1
   City          : String(35); // ORT01
   Country       : String(3);  // LAND1
 }
@@ -100,14 +102,14 @@ entity PurchasingDocumentType {
 entity PurchasingInfoRecord {
   key PurchasingInfoRecord : String(10); // INFNR
 
-  Material : String(40); // foreign key for association
-  Supplier : String(10); // foreign key for association
+  Material : String(40); // foreign key
+  Supplier : String(10); // foreign key
 
   // Associations based on foreign key fields
-  toMaterial : Association to MaterialMaster on toMaterial.Material = Material;
-  toSupplier : Association to VendorMaster on toSupplier.Supplier = Supplier;
+  toMaterial         : Association to MaterialMaster      on toMaterial.Material = Material;
+  toSupplier         : Association to VendorMaster        on toSupplier.Supplier = Supplier;
 
-  toPurchasingOrgInfo : Association to many PurchasingOrgInfoRecord on toPurchasingOrgInfo.PurchasingInfoRecord = PurchasingInfoRecord;
+  toPurchasingOrgInfo: Association to many PurchasingOrgInfoRecord on toPurchasingOrgInfo.PurchasingInfoRecord = PurchasingInfoRecord;
 }
 
 // EINE - Purchasing Info Record - Org Data
@@ -117,7 +119,7 @@ entity PurchasingOrgInfoRecord {
   NetPrice                   : Decimal(11,2); // NETPR
   PriceUnit                  : Decimal(5,0);  // PEINH
 
-  InfoRecordHeader           : Association to PurchasingInfoRecord on InfoRecordHeader.PurchasingInfoRecord = PurchasingInfoRecord; // n:1
+  InfoRecordHeader: Association to PurchasingInfoRecord on InfoRecordHeader.PurchasingInfoRecord = PurchasingInfoRecord; // n:1
 }
 
 // LFA1 - Vendor Master
@@ -127,4 +129,40 @@ entity VendorMaster {
   Country          : String(3);  // LAND1
   City             : String(35); // ORT01
   Street           : String(35); // STRAS
+}
+
+// EKKO - Purchase Order Header
+entity PurchaseOrderHeader {
+  key PurchaseOrder       : String(10); // EBELN
+  DocumentCategory        : String(1);  // BSTYP
+  PurchaseOrderType       : String(4);  // BSART
+  Supplier                : String(10); // LIFNR
+  PurchasingGroup         : String(3);  // EKGRP
+  DocumentDate            : Date;       // BEDAT
+  Currency                : String(5);  // WAERS
+  PaymentTerms            : String(4);  // ZTERM
+
+  toVendorMaster      : Association to VendorMaster        on toVendorMaster.Supplier        = Supplier;
+  toPurchasingGroup   : Association to PurchasingGroup     on toPurchasingGroup.PurchasingGroup = PurchasingGroup;
+  toPurchasingDocType : Association to PurchasingDocumentType on toPurchasingDocType.DocumentType = PurchaseOrderType;
+}
+
+// EKPO - Purchase Order Item
+entity PurchaseOrderItem {
+  key PurchaseOrder       : String(10); // EBELN
+  key PurchaseOrderItem   : String(5);  // EBELP
+  Material                : String(40); // MATNR
+  Plant                   : String(4);  // WERKS
+  StorageLocation         : String(4);  // LGORT
+  Quantity                : Decimal(13,3); // MENGE
+  BaseUnit                : String(3);     // MEINS
+  NetPrice                : Decimal(11,2); // NETPR
+  PurchaseRequisition     : String(10);    // BANFN
+
+  toPurchaseOrderHeader               : Association to PurchaseOrderHeader                 on toPurchaseOrderHeader.PurchaseOrder          = PurchaseOrder;
+  toMaterial           : Association to MaterialMaster      on toMaterial.Material           = Material;
+  toPlant              : Association to Plant               on toPlant.Plant                 = Plant;
+  toStorageLocation    : Association to StorageLocation     on toStorageLocation.Plant       = Plant
+                                                     and toStorageLocation.StorageLocation = StorageLocation;
+  toPurchaseRequisition: Association to PurchaseRequisition on toPurchaseRequisition.PurchaseRequisition = PurchaseRequisition;
 }
