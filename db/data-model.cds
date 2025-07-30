@@ -132,6 +132,7 @@ entity VendorMaster {
 }
 
 // EKKO - Purchase Order Header
+@odata.draft.enabled
 entity PurchaseOrderHeader {
   key PurchaseOrder       : String(10); // EBELN
   DocumentCategory        : String(1);  // BSTYP
@@ -145,9 +146,11 @@ entity PurchaseOrderHeader {
   toVendorMaster      : Association to VendorMaster        on toVendorMaster.Supplier        = Supplier;
   toPurchasingGroup   : Association to PurchasingGroup     on toPurchasingGroup.PurchasingGroup = PurchasingGroup;
   toPurchasingDocType : Association to PurchasingDocumentType on toPurchasingDocType.DocumentType = PurchaseOrderType;
+  toPurchaseOrderItem : Association to PurchaseOrderItem on toPurchaseOrderItem.PurchaseOrder = PurchaseOrder;
 }
 
 // EKPO - Purchase Order Item
+@odata.draft.enabled
 entity PurchaseOrderItem {
   key PurchaseOrder       : String(10); // EBELN
   key PurchaseOrderItem   : String(5);  // EBELP
