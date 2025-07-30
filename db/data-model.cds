@@ -58,7 +58,6 @@ entity MaterialMaster {
   CreationDate       : Date;       // ERSDA
 
   MaterialDescription       : Association to MaterialDescription on MaterialDescription.Material = Material; // 1:1
-
   toPurchasingInfoRecords   : Association to many PurchasingInfoRecord on toPurchasingInfoRecords.Material = Material;
 }
 
@@ -109,7 +108,6 @@ entity PurchasingInfoRecord {
   toSupplier : Association to VendorMaster on toSupplier.Supplier = Supplier;
 
   toPurchasingOrgInfo : Association to many PurchasingOrgInfoRecord on toPurchasingOrgInfo.PurchasingInfoRecord = PurchasingInfoRecord;
-
 }
 
 // EINE - Purchasing Info Record - Org Data

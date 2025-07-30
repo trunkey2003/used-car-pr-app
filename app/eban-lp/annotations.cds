@@ -8,8 +8,6 @@ annotate service.PurchaseRequisition with @(
         ReleaseStatus,
         RequisitionDate
     ],
-
-    // LIST COLUMNS
     UI.LineItem                      : [
         {
             $Type: 'UI.DataField',
@@ -46,11 +44,6 @@ annotate service.PurchaseRequisition with @(
             Value: ReleaseStatus,
             Label: 'Release Status'
         },
-    // {
-    //     $Type: 'UI.DataField',
-    //     Value: RequisitionDate,
-    //     Label: 'Requisition Date'
-    // },
     ],
     UI.PresentationVariant           : {
         SortOrder     : [{
@@ -163,6 +156,16 @@ annotate service.PurchaseRequisition with @(
                 Value: StorageLocation,
                 Label: 'StorageLocation',
             },
+            {
+                $Type : 'UI.DataField',
+                Value : toPurchasingInfoRecord.toPurchasingOrgInfo.NetPrice,
+                Label : 'NetPrice',
+            },
+            {
+                $Type : 'UI.DataField',
+                Value : toPurchasingInfoRecord.toPurchasingOrgInfo.PriceUnit,
+                Label : 'PriceUnit',
+            },
         ],
     },
     UI.FieldGroup #AccountAssignments: {
@@ -255,130 +258,122 @@ annotate service.PurchaseRequisition with @(
             },
         ],
     },
-    UI.FieldGroup#SupplierInfo : {
+    UI.FieldGroup #SupplierInfo      : {
         $Type: 'UI.FieldGroupType',
         Data : [
             {
-                $Type : 'UI.DataField',
-                Value : toPurchasingInfoRecord.Material,
-                Label : 'Material',
+                $Type: 'UI.DataField',
+                Value: toPurchasingInfoRecord.Material,
+                Label: 'Material',
             },
             {
-                $Type : 'UI.DataField',
-                Value : toPurchasingInfoRecord.PurchasingInfoRecord,
-                Label : 'PurchasingInfoRecord',
+                $Type: 'UI.DataField',
+                Value: toPurchasingInfoRecord.PurchasingInfoRecord,
+                Label: 'PurchasingInfoRecord',
             },
             {
-                $Type : 'UI.DataField',
-                Value : toPurchasingInfoRecord.Supplier,
-                Label : 'Supplier',
+                $Type: 'UI.DataField',
+                Value: toPurchasingInfoRecord.Supplier,
+                Label: 'Supplier',
             },
             {
-                $Type : 'UI.DataField',
-                Value : toPurchasingInfoRecord.toMaterial.BaseUnit,
-                Label : 'BaseUnit',
+                $Type: 'UI.DataField',
+                Value: toPurchasingInfoRecord.toMaterial.BaseUnit,
+                Label: 'BaseUnit',
             },
             {
-                $Type : 'UI.DataField',
-                Value : toPurchasingInfoRecord.toMaterial.CreationDate,
-                Label : 'CreationDate',
+                $Type: 'UI.DataField',
+                Value: toPurchasingInfoRecord.toMaterial.CreationDate,
+                Label: 'CreationDate',
             },
             {
-                $Type : 'UI.DataField',
-                Value : toPurchasingInfoRecord.toMaterial.IndustrySector,
-                Label : 'IndustrySector',
+                $Type: 'UI.DataField',
+                Value: toPurchasingInfoRecord.toMaterial.IndustrySector,
+                Label: 'IndustrySector',
             },
             {
-                $Type : 'UI.DataField',
-                Value : toPurchasingInfoRecord.toMaterial.Material,
-                Label : 'Material',
+                $Type: 'UI.DataField',
+                Value: toPurchasingInfoRecord.toMaterial.Material,
+                Label: 'Material',
             },
             {
-                $Type : 'UI.DataField',
-                Value : toPurchasingInfoRecord.toMaterial.MaterialGroup,
-                Label : 'MaterialGroup',
+                $Type: 'UI.DataField',
+                Value: toPurchasingInfoRecord.toMaterial.MaterialGroup,
+                Label: 'MaterialGroup',
             },
             {
-                $Type : 'UI.DataField',
-                Value : toPurchasingInfoRecord.toMaterial.MaterialType,
-                Label : 'MaterialType',
+                $Type: 'UI.DataField',
+                Value: toPurchasingInfoRecord.toMaterial.MaterialType,
+                Label: 'MaterialType',
             },
             {
-                $Type : 'UI.DataField',
-                Value : toPurchasingInfoRecord.toMaterial.MaterialDescription.Language,
-                Label : 'Language',
+                $Type: 'UI.DataField',
+                Value: toPurchasingInfoRecord.toMaterial.MaterialDescription.Language,
+                Label: 'Language',
             },
             {
-                $Type : 'UI.DataField',
-                Value : toPurchasingInfoRecord.toMaterial.MaterialDescription.Material,
-                Label : 'Material',
+                $Type: 'UI.DataField',
+                Value: toPurchasingInfoRecord.toMaterial.MaterialDescription.Material,
+                Label: 'Material',
             },
             {
-                $Type : 'UI.DataField',
-                Value : toPurchasingInfoRecord.toMaterial.MaterialDescription.MaterialDescription,
-                Label : 'MaterialDescription',
+                $Type: 'UI.DataField',
+                Value: toPurchasingInfoRecord.toMaterial.MaterialDescription.MaterialDescription,
+                Label: 'MaterialDescription',
             },
             {
-                $Type : 'UI.DataField',
-                Value : toPurchasingInfoRecord.toMaterial.toPurchasingInfoRecords.Material,
-                Label : 'Material',
+                $Type: 'UI.DataField',
+                Value: toPurchasingInfoRecord.toMaterial.toPurchasingInfoRecords.Material,
+                Label: 'Material',
             },
             {
-                $Type : 'UI.DataField',
-                Value : toPurchasingInfoRecord.toMaterial.toPurchasingInfoRecords.PurchasingInfoRecord,
-                Label : 'PurchasingInfoRecord',
+                $Type: 'UI.DataField',
+                Value: toPurchasingInfoRecord.toMaterial.toPurchasingInfoRecords.PurchasingInfoRecord,
+                Label: 'PurchasingInfoRecord',
             },
             {
-                $Type : 'UI.DataField',
-                Value : toPurchasingInfoRecord.toMaterial.toPurchasingInfoRecords.Supplier,
-                Label : 'Supplier',
+                $Type: 'UI.DataField',
+                Value: toPurchasingInfoRecord.toMaterial.toPurchasingInfoRecords.Supplier,
+                Label: 'Supplier',
             },
         ]
     },
-    UI.Facets : [
-    {
-        $Type : 'UI.ReferenceFacet',
-        Label : 'General Information',
-        ID : 'GeneralInformation',
-        Target : '@UI.FieldGroup#GeneralInformation',
-    },
-    {
-        $Type : 'UI.ReferenceFacet',
-        Label : 'Account Assignments',
-        ID : 'AccountAssignments',
-        Target : '@UI.FieldGroup#AccountAssignments',
-    },
-    {
-        $Type : 'UI.ReferenceFacet',
-        Label : 'Material Details',
-        ID : 'MaterialDetails',
-        Target : '@UI.FieldGroup#MaterialDetails',
-    },
-    {
-        $Type : 'UI.ReferenceFacet',
-        Label : 'Supplier Info',
-        ID : 'PurchasingInfoRecords',
-        Target: '@UI.FieldGroup#SupplierInfo'
-    },
-],
-    UI.Identification : [
+    UI.Facets                        : [
+        {
+            $Type : 'UI.ReferenceFacet',
+            Label : 'General Information',
+            ID    : 'GeneralInformation',
+            Target: '@UI.FieldGroup#GeneralInformation',
+        },
+        {
+            $Type : 'UI.ReferenceFacet',
+            Label : 'Account Assignments',
+            ID    : 'AccountAssignments',
+            Target: '@UI.FieldGroup#AccountAssignments',
+        },
+        {
+            $Type : 'UI.ReferenceFacet',
+            Label : 'Material Details',
+            ID    : 'MaterialDetails',
+            Target: '@UI.FieldGroup#MaterialDetails',
+        },
+        {
+            $Type : 'UI.ReferenceFacet',
+            Label : 'Supplier Info',
+            ID    : 'PurchasingInfoRecords',
+            Target: '@UI.FieldGroup#SupplierInfo'
+        },
+    ],
+    UI.Identification                : [
         {
             $Type : 'UI.DataFieldForAction',
             Action : 'PRService.approve',
             Label : '{i18n>Approve}',
-            Determining : true,
         },
         {
             $Type : 'UI.DataFieldForAction',
             Action : 'PRService.reject',
             Label : '{i18n>Reject}',
-            Determining : true,
         },
     ],
 );
-
-
-
-
-
-
