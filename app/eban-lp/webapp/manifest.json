@@ -106,6 +106,21 @@
           "pattern": "PurchaseRequisition({key}):?query:",
           "name": "PurchaseRequisitionObjectPage",
           "target": "PurchaseRequisitionObjectPage"
+        },
+        {
+          "pattern": "MaterialMaster({key}):?query:",
+          "name": "MaterialObjectPage",
+          "target": "MaterialObjectPage"
+        },
+        {
+          "pattern": "VendorMaster({key}):?query:",
+          "name": "SupplierObjectPage",
+          "target": "SupplierObjectPage"
+        },
+        {
+          "pattern": "Plant({key}):?query:",
+          "name": "PlantObjectPage",
+          "target": "PlantObjectPage"
         }
       ],
       "targets": {
@@ -141,7 +156,54 @@
           "options": {
             "settings": {
               "editableHeaderContent": false,
-              "contextPath": "/PurchaseRequisition"
+              "contextPath": "/PurchaseRequisition",
+              "navigation": {
+                "toMaterial": {
+                  "detail": {
+                    "route": "MaterialObjectPage"
+                  }
+                },
+                "toSupplier": {
+                  "detail": {
+                    "route": "SupplierObjectPage"
+                  }
+                },
+                "toPlant": {
+                  "detail": {
+                    "route": "PlantObjectPage"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "MaterialObjectPage": {
+          "type": "Component",
+          "id": "MaterialObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": {
+            "settings": {
+              "contextPath": "/MaterialMaster"
+            }
+          }
+        },
+        "SupplierObjectPage": {
+          "type": "Component",
+          "id": "SupplierObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": {
+            "settings": {
+              "contextPath": "/VendorMaster"
+            }
+          }
+        },
+        "PlantObjectPage": {
+          "type": "Component",
+          "id": "PlantObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": {
+            "settings": {
+              "contextPath": "/Plant"
             }
           }
         }

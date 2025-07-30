@@ -8,6 +8,7 @@ annotate service.PurchaseRequisition with @(
         ReleaseStatus,
         RequisitionDate
     ],
+
     UI.LineItem                      : [
         {
             $Type: 'UI.DataField',
@@ -15,9 +16,10 @@ annotate service.PurchaseRequisition with @(
             Label: 'PR Number'
         },
         {
-            $Type: 'UI.DataField',
-            Value: Material,
-            Label: 'Material'
+            $Type : 'UI.DataFieldWithNavigationPath',
+            Value : Material,
+            Label : 'Material',
+            Target: 'toMaterial'
         },
         {
             $Type: 'UI.DataField',
@@ -25,10 +27,17 @@ annotate service.PurchaseRequisition with @(
             Label: 'Material Description'
         },
         {
-            $Type: 'UI.DataField',
-            Value: Plant,
-            Label: 'Plant'
+            $Type : 'UI.DataFieldWithNavigationPath',
+            Value : Plant,
+            Label : 'Plant',
+            Target: 'toPlant'
         },
+        // {
+        //   $Type: 'UI.DataFieldWithNavigationPath',
+        //   Value: Supplier,
+        //   Label: 'Supplier',
+        //   Target: 'toSupplier'
+        // },
         {
             $Type: 'UI.DataField',
             Value: Quantity,
@@ -43,8 +52,9 @@ annotate service.PurchaseRequisition with @(
             $Type: 'UI.DataField',
             Value: ReleaseStatus,
             Label: 'Release Status'
-        },
+        }
     ],
+
     UI.PresentationVariant           : {
         SortOrder     : [{
             Property  : RequisitionDate,
@@ -52,328 +62,316 @@ annotate service.PurchaseRequisition with @(
         }],
         Visualizations: ['@UI.LineItem']
     },
+
     UI.HeaderFacets                  : [{
         $Type : 'UI.ReferenceFacet',
         Label : 'Header',
         ID    : 'Header',
-        Target: '@UI.FieldGroup#Header',
-    }, ],
+        Target: '@UI.FieldGroup#Header'
+    }],
+
     UI.FieldGroup #Header            : {
         $Type: 'UI.FieldGroupType',
         Data : [
             {
                 $Type: 'UI.DataField',
                 Value: PurchaseRequisition,
-                Label: 'PurchaseRequisition',
+                Label: 'PurchaseRequisition'
             },
             {
-                $Type: 'UI.DataField',
-                Value: Material,
-                Label: 'Material',
+                $Type : 'UI.DataFieldWithNavigationPath',
+                Value : Material,
+                Label : 'Material',
+                Target: 'toMaterial'
             },
             {
-                $Type: 'UI.DataField',
-                Value: Plant,
-                Label: 'Plant',
+                $Type : 'UI.DataFieldWithNavigationPath',
+                Value : Plant,
+                Label : 'Plant',
+                Target: 'toPlant'
             },
+            //   {
+            //     $Type: 'UI.DataFieldWithNavigationPath',
+            //     Value: Supplier,
+            //     Label: 'Supplier',
+            //     Target: '@UI.FieldGroup #SupplierInfo2'
+            //   },
             {
                 $Type: 'UI.DataField',
                 Value: ReleaseStatus,
-                Label: 'ReleaseStatus',
-            },
-        ],
+                Label: 'ReleaseStatus'
+            }
+        ]
     },
+
     UI.FieldGroup #GeneralInformation: {
         $Type: 'UI.FieldGroupType',
         Data : [
             {
                 $Type: 'UI.DataField',
                 Value: PurchaseRequisition,
-                Label: 'PurchaseRequisition',
+                Label: 'PurchaseRequisition'
             },
             {
                 $Type: 'UI.DataField',
                 Value: PurchaseReqnItem,
-                Label: 'PurchaseReqnItem',
+                Label: 'PurchaseReqnItem'
             },
             {
                 $Type: 'UI.DataField',
                 Value: BaseUnit,
-                Label: 'BaseUnit',
+                Label: 'BaseUnit'
             },
             {
                 $Type: 'UI.DataField',
                 Value: CreatedByUser,
-                Label: 'CreatedByUser',
+                Label: 'CreatedByUser'
             },
             {
                 $Type: 'UI.DataField',
                 Value: DeliveryDate,
-                Label: 'DeliveryDate',
+                Label: 'DeliveryDate'
             },
             {
-                $Type: 'UI.DataField',
-                Value: Material,
-                Label: 'Material',
+                $Type : 'UI.DataFieldWithNavigationPath',
+                Value : Material,
+                Label : 'Material',
+                Target: 'toMaterial'
             },
             {
-                $Type: 'UI.DataField',
-                Value: Plant,
-                Label: 'Plant',
+                $Type : 'UI.DataFieldWithNavigationPath',
+                Value : Plant,
+                Label : 'Plant',
+                Target: 'toPlant'
             },
+            //   {
+            //     $Type: 'UI.DataFieldWithNavigationPath',
+            //     Value: Supplier,
+            //     Label: 'Supplier',
+            //     Target: 'toSupplier'
+            //   },
             {
                 $Type: 'UI.DataField',
                 Value: PurchaseRequisitionType,
-                Label: 'PurchaseRequisitionType',
+                Label: 'PurchaseRequisitionType'
             },
             {
                 $Type: 'UI.DataField',
                 Value: PurchasingGroup,
-                Label: 'PurchasingGroup',
+                Label: 'PurchasingGroup'
             },
             {
                 $Type: 'UI.DataField',
                 Value: Quantity,
-                Label: 'Quantity',
+                Label: 'Quantity'
             },
             {
                 $Type: 'UI.DataField',
                 Value: ReleaseStatus,
-                Label: 'ReleaseStatus',
+                Label: 'ReleaseStatus'
             },
             {
                 $Type: 'UI.DataField',
                 Value: RequisitionDate,
-                Label: 'RequisitionDate',
+                Label: 'RequisitionDate'
             },
             {
                 $Type: 'UI.DataField',
                 Value: Requisitioner,
-                Label: 'Requisitioner',
+                Label: 'Requisitioner'
             },
             {
                 $Type: 'UI.DataField',
                 Value: StorageLocation,
-                Label: 'StorageLocation',
+                Label: 'StorageLocation'
             },
             {
-                $Type : 'UI.DataField',
-                Value : toPurchasingInfoRecord.toPurchasingOrgInfo.NetPrice,
-                Label : 'NetPrice',
+                $Type: 'UI.DataField',
+                Value: toPurchasingInfoRecord.toPurchasingOrgInfo.NetPrice,
+                Label: 'NetPrice'
             },
             {
-                $Type : 'UI.DataField',
-                Value : toPurchasingInfoRecord.toPurchasingOrgInfo.PriceUnit,
-                Label : 'PriceUnit',
-            },
-        ],
+                $Type: 'UI.DataField',
+                Value: toPurchasingInfoRecord.toPurchasingOrgInfo.PriceUnit,
+                Label: 'PriceUnit'
+            }
+        ]
     },
+
     UI.FieldGroup #AccountAssignments: {
         $Type: 'UI.FieldGroupType',
         Data : [
             {
                 $Type: 'UI.DataField',
                 Value: AccountAssignments.AcctAssignment,
-                Label: 'AcctAssignment',
+                Label: 'AcctAssignment'
             },
             {
                 $Type: 'UI.DataField',
                 Value: AccountAssignments.AcctAssignmentCategory,
-                Label: 'AcctAssignmentCategory',
+                Label: 'AcctAssignmentCategory'
             },
             {
                 $Type: 'UI.DataField',
                 Value: AccountAssignments.CostCenter,
-                Label: 'CostCenter',
+                Label: 'CostCenter'
             },
             {
                 $Type: 'UI.DataField',
                 Value: AccountAssignments.GLAccount,
-                Label: 'GLAccount',
+                Label: 'GLAccount'
             },
             {
                 $Type: 'UI.DataField',
                 Value: AccountAssignments.Order,
-                Label: 'Order',
+                Label: 'Order'
             },
             {
                 $Type: 'UI.DataField',
                 Value: AccountAssignments.PurchaseReqnItem,
-                Label: 'PurchaseReqnItem',
+                Label: 'PurchaseReqnItem'
             },
             {
                 $Type: 'UI.DataField',
                 Value: AccountAssignments.PurchaseRequisition,
-                Label: 'PurchaseRequisition',
-            },
-        ],
+                Label: 'PurchaseRequisition'
+            }
+        ]
     },
+
     UI.FieldGroup #MaterialDetails   : {
         $Type: 'UI.FieldGroupType',
         Data : [
             {
                 $Type: 'UI.DataField',
                 Value: toMaterial.BaseUnit,
-                Label: 'BaseUnit',
+                Label: 'BaseUnit'
             },
             {
                 $Type: 'UI.DataField',
                 Value: toMaterial.CreationDate,
-                Label: 'CreationDate',
+                Label: 'CreationDate'
             },
             {
                 $Type: 'UI.DataField',
                 Value: toMaterial.IndustrySector,
-                Label: 'IndustrySector',
+                Label: 'IndustrySector'
             },
             {
                 $Type: 'UI.DataField',
                 Value: toMaterial.Material,
-                Label: 'Material',
+                Label: 'Material'
             },
             {
                 $Type: 'UI.DataField',
                 Value: toMaterial.MaterialType,
-                Label: 'MaterialType',
+                Label: 'MaterialType'
             },
             {
                 $Type: 'UI.DataField',
                 Value: toMaterial.MaterialGroup,
-                Label: 'MaterialGroup',
+                Label: 'MaterialGroup'
             },
             {
                 $Type: 'UI.DataField',
                 Value: toMaterial.MaterialDescription.Language,
-                Label: 'Language',
+                Label: 'Language'
             },
             {
                 $Type: 'UI.DataField',
                 Value: toMaterial.MaterialDescription.Material,
-                Label: 'Material',
+                Label: 'Material'
             },
             {
                 $Type: 'UI.DataField',
                 Value: toMaterial.MaterialDescription.MaterialDescription,
-                Label: 'MaterialDescription',
-            },
-        ],
+                Label: 'MaterialDescription'
+            }
+        ]
     },
+
     UI.FieldGroup #SupplierInfo      : {
         $Type: 'UI.FieldGroupType',
         Data : [
             {
                 $Type: 'UI.DataField',
                 Value: toPurchasingInfoRecord.Material,
-                Label: 'Material',
+                Label: 'Material'
             },
             {
                 $Type: 'UI.DataField',
                 Value: toPurchasingInfoRecord.PurchasingInfoRecord,
-                Label: 'PurchasingInfoRecord',
-            },
-            {
-                $Type: 'UI.DataField',
-                Value: toPurchasingInfoRecord.Supplier,
-                Label: 'Supplier',
-            },
-            {
-                $Type: 'UI.DataField',
-                Value: toPurchasingInfoRecord.toMaterial.BaseUnit,
-                Label: 'BaseUnit',
-            },
-            {
-                $Type: 'UI.DataField',
-                Value: toPurchasingInfoRecord.toMaterial.CreationDate,
-                Label: 'CreationDate',
-            },
-            {
-                $Type: 'UI.DataField',
-                Value: toPurchasingInfoRecord.toMaterial.IndustrySector,
-                Label: 'IndustrySector',
-            },
-            {
-                $Type: 'UI.DataField',
-                Value: toPurchasingInfoRecord.toMaterial.Material,
-                Label: 'Material',
-            },
-            {
-                $Type: 'UI.DataField',
-                Value: toPurchasingInfoRecord.toMaterial.MaterialGroup,
-                Label: 'MaterialGroup',
-            },
-            {
-                $Type: 'UI.DataField',
-                Value: toPurchasingInfoRecord.toMaterial.MaterialType,
-                Label: 'MaterialType',
-            },
-            {
-                $Type: 'UI.DataField',
-                Value: toPurchasingInfoRecord.toMaterial.MaterialDescription.Language,
-                Label: 'Language',
-            },
-            {
-                $Type: 'UI.DataField',
-                Value: toPurchasingInfoRecord.toMaterial.MaterialDescription.Material,
-                Label: 'Material',
-            },
-            {
-                $Type: 'UI.DataField',
-                Value: toPurchasingInfoRecord.toMaterial.MaterialDescription.MaterialDescription,
-                Label: 'MaterialDescription',
-            },
-            {
-                $Type: 'UI.DataField',
-                Value: toPurchasingInfoRecord.toMaterial.toPurchasingInfoRecords.Material,
-                Label: 'Material',
-            },
-            {
-                $Type: 'UI.DataField',
-                Value: toPurchasingInfoRecord.toMaterial.toPurchasingInfoRecords.PurchasingInfoRecord,
-                Label: 'PurchasingInfoRecord',
-            },
-            {
-                $Type: 'UI.DataField',
-                Value: toPurchasingInfoRecord.toMaterial.toPurchasingInfoRecords.Supplier,
-                Label: 'Supplier',
-            },
+                Label: 'PurchasingInfoRecord'
+            }
         ]
     },
+
+    UI.FieldGroup #SupplierInfo2     : {
+        $Type: 'UI.FieldGroupType',
+        Data : [
+            {
+                $Type: 'UI.DataField',
+                Value: toPurchasingInfoRecord.toSupplier.Supplier,
+                Label: 'Supplier ID'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: toPurchasingInfoRecord.toSupplier.SupplierName,
+                Label: 'Supplier Name'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: toPurchasingInfoRecord.toSupplier.City,
+                Label: 'City'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: toPurchasingInfoRecord.toSupplier.Country,
+                Label: 'Country'
+            }
+        ]
+    },
+
+
     UI.Facets                        : [
         {
             $Type : 'UI.ReferenceFacet',
             Label : 'General Information',
             ID    : 'GeneralInformation',
-            Target: '@UI.FieldGroup#GeneralInformation',
+            Target: '@UI.FieldGroup#GeneralInformation'
         },
         {
             $Type : 'UI.ReferenceFacet',
             Label : 'Account Assignments',
             ID    : 'AccountAssignments',
-            Target: '@UI.FieldGroup#AccountAssignments',
+            Target: '@UI.FieldGroup#AccountAssignments'
         },
         {
             $Type : 'UI.ReferenceFacet',
             Label : 'Material Details',
             ID    : 'MaterialDetails',
-            Target: '@UI.FieldGroup#MaterialDetails',
+            Target: '@UI.FieldGroup#MaterialDetails'
         },
         {
             $Type : 'UI.ReferenceFacet',
             Label : 'Supplier Info',
             ID    : 'PurchasingInfoRecords',
             Target: '@UI.FieldGroup#SupplierInfo'
-        },
+        }
     ],
+
     UI.Identification                : [
         {
             $Type : 'UI.DataFieldForAction',
-            Action : 'PRService.approve',
-            Label : '{i18n>Approve}',
+            Action: 'PRService.approve',
+            Label : '{i18n>Approve}'
         },
         {
             $Type : 'UI.DataFieldForAction',
-            Action : 'PRService.reject',
-            Label : '{i18n>Reject}',
-        },
+            Action: 'PRService.reject',
+            Label : '{i18n>Reject}'
+        }
     ],
+
+
 );
