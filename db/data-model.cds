@@ -173,12 +173,11 @@ entity PurchaseOrderHeader {
                               on toPurchasingGroup.PurchasingGroup = PurchasingGroup;
       toPurchasingDocType : Association to PurchasingDocumentType
                               on toPurchasingDocType.DocumentType = PurchaseOrderType;
-      toPurchaseOrderItem : Association to many PurchaseOrderItem
+      toPurchaseOrderItem : Composition of many PurchaseOrderItem
                               on toPurchaseOrderItem.PurchaseOrder = PurchaseOrder;
 }
 
 // EKPO - Purchase Order Item
-@odata.draft.enabled
 entity PurchaseOrderItem {
   key PurchaseOrder         : String(10); // EBELN
   key PurchaseOrderItem     : String(5); // EBELP
@@ -201,4 +200,33 @@ entity PurchaseOrderItem {
                                 and toStorageLocation.StorageLocation = StorageLocation;
       toPurchaseRequisition : Association to PurchaseRequisition
                                 on toPurchaseRequisition.PurchaseRequisition = PurchaseRequisition;
+}
+
+@odata.draft.enabled
+entity MSEG {
+  // Composite key: Document + Year + Line
+  key MaterialDocument     : String(10);  // MBLNR
+  key MaterialDocumentYear : String(4);   // MJAHR
+  key MaterialDocumentItem : String(4);   // ZEILE
+
+      Material            : String(40);   // MATNR
+      Plant               : String(4);    // WERKS
+      StorageLocation     : String(4);    // LGORT
+      PurchaseOrder       : String(10);   // EBELN
+      PurchaseOrderItem   : String(5);    // EBELP
+      Quantity            : Decimal(13,3);// MENGE
+
+      // Associations into your masters
+      toMaterial           : Association to MaterialMaster
+                                on toMaterial.Material = Material;
+      toPlant              : Association to Plant
+                                on toPlant.Plant = Plant;
+      toStorageLocation    : Association to StorageLocation
+                                on  toStorageLocation.Plant           = Plant
+                                and toStorageLocation.StorageLocation = StorageLocation;
+      toPurchaseOrderHeader: Association to PurchaseOrderHeader
+                                on toPurchaseOrderHeader.PurchaseOrder = PurchaseOrder;
+      toPurchaseOrderItem  : Association to PurchaseOrderItem
+                                on toPurchaseOrderItem.PurchaseOrder     = PurchaseOrder
+                               and toPurchaseOrderItem.PurchaseOrderItem = PurchaseOrderItem;
 }

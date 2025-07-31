@@ -146,67 +146,110 @@ module.exports = cds.service.impl(async function () {
       req.error(400, `DocumentDate must be today or in the past.`);
     }
 
-    const purchaseOrderItems = await db.run(
-      SELECT.from(PurchaseOrderItem).where({ PurchaseOrder })
-    );
-    console.log("Jaja " + JSON.stringify({
-      ...req.data,
-      purchaseOrderItems
-    }))
-    // --- Line‐item validations ---
-    for (const item of purchaseOrderItems) {
-      const {
-        Material,
-        PurchaseRequisition: PR,
-        Plant: plantCode,
-        StorageLocation: storageLoc,
-        Quantity,
-        NetPrice
-      } = item;
+    const purchaseOrderItems = req.data.toPurchaseOrderItem || [];
+    // console.log("Jaja " + JSON.stringify({
+    //   ...req.data,
+    // }))
 
-      // Material exists in MARA
-      if (!Material) {
-        req.error(400, `Each line must include a Material.`);
-      }
-      if (!await db.exists(MaterialMaster).where({ Material })) {
-        req.error(400, `Material '${Material}' does not exist.`);
+    if (purchaseOrderItems && purchaseOrderItems.length) {
+      let currentTotal = 0;
+      for (const item of purchaseOrderItems) {
+        const {
+          Material,
+          PurchaseRequisition: PR,
+          Plant: plantCode,
+          StorageLocation: storageLoc,
+          Quantity,
+          NetPrice
+        } = item;
+
+        // Material exists in MARA
+        if (!Material) {
+          req.error(400, `Each line must include a Material.`);
+        }
+        if (!await db.exists(MaterialMaster).where({ Material })) {
+          req.error(400, `Material '${Material}' does not exist.`);
+        }
+
+        // PR exists & is released
+        if (!PR) {
+          req.error(400, `Each line must include a PurchaseRequisition.`);
+        }
+        if (!await db.exists(PurchaseRequisition)
+          .where({ PurchaseRequisition: PR, ReleaseStatus: 'REL' })) {
+          req.error(400, `PurchaseRequisition '${PR}' not found or not released.`);
+        }
+
+        // Plant & StorageLocation
+        if (!plantCode) {
+          req.error(400, `Each line must include a Plant.`);
+        }
+        if (!await db.exists(Plant).where({ Plant: plantCode })) {
+          req.error(400, `Plant '${plantCode}' does not exist.`);
+        }
+        if (!storageLoc) {
+          req.error(400, `Each line must include a StorageLocation.`);
+        }
+        if (!await db.exists(StorageLocation)
+          .where({ Plant: plantCode, StorageLocation: storageLoc })) {
+          req.error(400,
+            `StorageLocation '${storageLoc}' does not exist for Plant '${plantCode}'.`);
+        }
+
+        // Quantity: positive decimal
+        const qty = parseFloat(Quantity);
+        if (isNaN(qty) || qty <= 0) {
+          req.error(400, `Quantity must be a positive number.`);
+        }
+
+        // NetPrice: positive decimal
+        const np = parseFloat(NetPrice);
+        if (isNaN(np) || np <= 0) {
+          req.error(400, `NetPrice must be a positive number.`);
+        }
+
+        currentTotal += qty * np;
       }
 
-      // PR exists & is released
-      if (!PR) {
-        req.error(400, `Each line must include a PurchaseRequisition.`);
-      }
-      if (!await db.exists(PurchaseRequisition)
-        .where({ PurchaseRequisition: PR, ReleaseStatus: 'REL' })) {
-        req.error(400, `PurchaseRequisition '${PR}' not found or not released.`);
+      const LIMIT = 1000000; // AUD
+      const year = docDate.getFullYear();
+      const month = docDate.getMonth();          // 0-based
+      const periodStart = new Date(year, month, 1);
+      const periodEnd = new Date(year, month + 1, 0);
+
+      // find all other POs for this supplier in the same month
+      const headers = await db.run(
+        SELECT
+          .columns('PurchaseOrder')
+          .from(PurchaseOrderHeader)
+          .where({
+            Supplier,
+            DocumentDate: { '>=': periodStart, '<=': periodEnd }
+          })
+      );
+      const otherPOs = headers
+        .map(h => h.PurchaseOrder)
+        .filter(pon => pon !== PurchaseOrder);
+
+
+      // console.log("otherPOs: ", JSON.stringify(otherPOs))
+      let existingTotal = 0;
+      if (otherPOs.length) {
+        const itemsInPeriod = await db.run(
+          SELECT
+            .columns(['Quantity', 'NetPrice'])
+            .from(PurchaseOrderItem)
+            .where({ PurchaseOrder: { in: otherPOs } })
+        );
+        for (const it of itemsInPeriod) {
+          existingTotal += parseFloat(it.Quantity) * parseFloat(it.NetPrice);
+        }
       }
 
-      // Plant & StorageLocation
-      if (!plantCode) {
-        req.error(400, `Each line must include a Plant.`);
-      }
-      if (!await db.exists(Plant).where({ Plant: plantCode })) {
-        req.error(400, `Plant '${plantCode}' does not exist.`);
-      }
-      if (!storageLoc) {
-        req.error(400, `Each line must include a StorageLocation.`);
-      }
-      if (!await db.exists(StorageLocation)
-        .where({ Plant: plantCode, StorageLocation: storageLoc })) {
+      if ((existingTotal + currentTotal) > LIMIT) {
         req.error(400,
-          `StorageLocation '${storageLoc}' does not exist for Plant '${plantCode}'.`);
-      }
-
-      // Quantity: positive decimal
-      const qty = parseFloat(Quantity);
-      if (isNaN(qty) || qty <= 0) {
-        req.error(400, `Quantity must be a positive number.`);
-      }
-
-      // NetPrice: positive decimal
-      const np = parseFloat(NetPrice);
-      if (isNaN(np) || np <= 0) {
-        req.error(400, `NetPrice must be a positive number.`);
+          `Supplier '${Supplier}' has committed ${existingTotal.toFixed(2)} AUD so far this month; ` +
+          `adding this PO (${currentTotal.toFixed(2)} AUD) exceeds the ${LIMIT.toLocaleString()} AUD limit.`);
       }
     }
   });
