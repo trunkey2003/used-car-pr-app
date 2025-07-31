@@ -4,7 +4,6 @@ service PRService {
   entity PurchaseRequisition                  as projection on uc.PurchaseRequisition
     actions {
       action approve() returns String;
-      action reject()  returns String;
     };
 
   entity PurchaseRequisitionAccountAssignment as projection on uc.PurchaseRequisitionAccountAssignment;
@@ -17,6 +16,11 @@ service PRService {
   entity PurchasingInfoRecord                 as projection on uc.PurchasingInfoRecord;
   entity PurchasingOrgInfoRecord              as projection on uc.PurchasingOrgInfoRecord;
   entity VendorMaster                         as projection on uc.VendorMaster;
-  entity PurchaseOrderHeader                  as projection on uc.PurchaseOrderHeader;
+
+  entity PurchaseOrderHeader                  as projection on uc.PurchaseOrderHeader
+    actions {
+      action approve() returns String;
+    };
+
   entity PurchaseOrderItem                    as projection on uc.PurchaseOrderItem;
 }

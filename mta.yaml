@@ -85,16 +85,6 @@ modules:
     - npm install
     - npm run build:cf
     supported-platforms: []
-- name: nsproject1
-  type: html5
-  path: app/project1
-  build-parameters:
-    build-result: dist
-    builder: custom
-    commands:
-    - npm install
-    - npm run build:cf
-    supported-platforms: []
 - name: nsekkolp
   type: html5
   path: app/ekko-lp
