@@ -28,7 +28,8 @@
     "undeploy": "cf undeploy used-car-pr-app --delete-services --delete-service-keys --delete-service-brokers",
     "build": "rimraf resources mta_archives && mbt build --mtar archive",
     "deploy": "cf deploy mta_archives/archive.mtar --retries 1",
-    "watch-ekko-lp": "cds watch --open ekko-lp/webapp/index.html?sap-ui-xx-viewCache=false"
+    "watch-ekko-lp": "cds watch --open ekko-lp/webapp/index.html?sap-ui-xx-viewCache=false",
+    "watch-mseg-lp": "cds watch --open mseg-lp/webapp/index.html?sap-ui-xx-viewCache=false"
   },
   "cds": {
     "requires": {
@@ -44,6 +45,7 @@
   },
   "sapux": [
     "app/eban-lp",
-    "app/ekko-lp"
+    "app/ekko-lp",
+    "app/mseg-lp"
   ]
 }

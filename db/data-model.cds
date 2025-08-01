@@ -156,13 +156,17 @@ entity VendorMaster {
 entity PurchaseOrderHeader {
   key PurchaseOrder       : String(10); // EBELN
       DocumentCategory    : String(1); // BSTYP
+
       @mandatory
       PurchaseOrderType   : String(4); // BSART
+
       @mandatory
       Supplier            : String(10); // LIFNR
       PurchasingGroup     : String(3); // EKGRP
+
       @mandatory
       DocumentDate        : Date; // BEDAT
+
       @mandatory
       Currency            : String(5); // WAERS
       PaymentTerms        : String(4); // ZTERM
@@ -202,31 +206,33 @@ entity PurchaseOrderItem {
                                 on toPurchaseRequisition.PurchaseRequisition = PurchaseRequisition;
 }
 
+// MSEG - Material Document
 @odata.draft.enabled
-entity MSEG {
-  // Composite key: Document + Year + Line
-  key MaterialDocument     : String(10);  // MBLNR
-  key MaterialDocumentYear : String(4);   // MJAHR
-  key MaterialDocumentItem : String(4);   // ZEILE
+entity MaterialDocument {
+  key MaterialDocument      : String(10); // MBLNR
+  key MaterialDocumentYear  : String(4); // MJAHR
+  key MaterialDocumentItem  : String(4); // ZEILE
 
-      Material            : String(40);   // MATNR
-      Plant               : String(4);    // WERKS
-      StorageLocation     : String(4);    // LGORT
-      PurchaseOrder       : String(10);   // EBELN
-      PurchaseOrderItem   : String(5);    // EBELP
-      Quantity            : Decimal(13,3);// MENGE
+      Material              : String(40); // MATNR
+      Plant                 : String(4); // WERKS
+      StorageLocation       : String(4); // LGORT
+      PurchaseOrder         : String(10); // EBELN
+      PurchaseOrderItem     : String(5); // EBELP
+      Quantity              : Decimal(13, 3); // MENGE
+      BaseUnit              : String(3);
+      MovementType          : String(3);
 
       // Associations into your masters
-      toMaterial           : Association to MaterialMaster
+      toMaterial            : Association to MaterialMaster
                                 on toMaterial.Material = Material;
-      toPlant              : Association to Plant
+      toPlant               : Association to Plant
                                 on toPlant.Plant = Plant;
-      toStorageLocation    : Association to StorageLocation
+      toStorageLocation     : Association to StorageLocation
                                 on  toStorageLocation.Plant           = Plant
                                 and toStorageLocation.StorageLocation = StorageLocation;
-      toPurchaseOrderHeader: Association to PurchaseOrderHeader
+      toPurchaseOrderHeader : Association to PurchaseOrderHeader
                                 on toPurchaseOrderHeader.PurchaseOrder = PurchaseOrder;
-      toPurchaseOrderItem  : Association to PurchaseOrderItem
-                                on toPurchaseOrderItem.PurchaseOrder     = PurchaseOrder
-                               and toPurchaseOrderItem.PurchaseOrderItem = PurchaseOrderItem;
+      toPurchaseOrderItem   : Association to PurchaseOrderItem
+                                on  toPurchaseOrderItem.PurchaseOrder     = PurchaseOrder
+                                and toPurchaseOrderItem.PurchaseOrderItem = PurchaseOrderItem;
 }

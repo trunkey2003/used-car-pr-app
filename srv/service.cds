@@ -23,4 +23,6 @@ service PRService {
     };
 
   entity PurchaseOrderItem                    as projection on uc.PurchaseOrderItem;
+  entity MaterialDocument                    as projection on uc.MaterialDocument;
+  
 }
