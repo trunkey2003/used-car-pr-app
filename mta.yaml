@@ -79,6 +79,10 @@ modules:
       - nsmseg.zip
       name: nsmseg
       target-path: app/
+    - artifacts:
+      - nsrbkplp.zip
+      name: nsrbkplp
+      target-path: app/
 - name: ns1ebanlp
   type: html5
   path: app/eban-lp
@@ -102,6 +106,16 @@ modules:
 - name: nsmseg
   type: html5
   path: app/mseg-lp
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+- name: nsrbkplp
+  type: html5
+  path: app/rbkp-lp
   build-parameters:
     build-result: dist
     builder: custom

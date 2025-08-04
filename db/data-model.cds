@@ -212,18 +212,24 @@ entity MaterialDocument {
   key MaterialDocument      : String(10); // MBLNR
   key MaterialDocumentYear  : String(4); // MJAHR
   key MaterialDocumentItem  : String(4); // ZEILE
+
       @mandatory
       Material              : String(40); // MATNR
+
       @mandatory
       Plant                 : String(4); // WERKS
+
       @mandatory
       StorageLocation       : String(4); // LGORT
+
       @mandatory
       PurchaseOrder         : String(10); // EBELN
       PurchaseOrderItem     : String(5); // EBELP
+
       @mandatory
       Quantity              : Decimal(13, 3); // MENGE
       BaseUnit              : String(3);
+
       @mandatory
       MovementType          : String(3);
 
@@ -240,4 +246,108 @@ entity MaterialDocument {
       toPurchaseOrderItem   : Association to PurchaseOrderItem
                                 on  toPurchaseOrderItem.PurchaseOrder     = PurchaseOrder
                                 and toPurchaseOrderItem.PurchaseOrderItem = PurchaseOrderItem;
+}
+
+// RBKP - Supplier Invoice Header
+@odata.draft.enabled
+entity SupplierInvoiceHeader {
+  key SupplierInvoice       : String(10); // BELNR
+  key FiscalYear            : String(4); // GJAHR
+
+      @mandatory
+      Supplier              : String(10); // LIFNR
+
+      @mandatory
+      DocumentDate          : Date; // BLDAT
+
+      @mandatory
+      GrossAmount           : Decimal(13, 2); // RMWWR
+
+      @mandatory
+      Currency              : String(5); // WAERS
+
+      // Associations
+      toSupplier            : Association to VendorMaster
+                                on toSupplier.Supplier = Supplier;
+      toSupplierInvoiceItem : Composition of many SupplierInvoiceItem
+                                on toSupplierInvoiceItem.SupplierInvoice = SupplierInvoice;
+}
+
+// RSEG - Supplier Invoice Item
+entity SupplierInvoiceItem {
+  key SupplierInvoice         : String(10); // BELNR
+  key SupplierInvoiceItem     : String(6); // BUZEI
+
+      @mandatory
+      PurchaseOrder           : String(10); // EBELN
+      PurchaseOrderItem       : String(5); // EBELP
+      Material                : String(40); // MATNR
+
+      @mandatory
+      Quantity                : Decimal(13, 3); // MENGE
+      BaseUnit                : String(3);
+
+      @mandatory
+      Amount                  : Decimal(13, 2); // WRBTR
+
+      // Associations
+      toSupplierInvoiceHeader : Association to SupplierInvoiceHeader
+                                  on toSupplierInvoiceHeader.SupplierInvoice = SupplierInvoice;
+      toPurchaseOrderHeader   : Association to PurchaseOrderHeader
+                                  on toPurchaseOrderHeader.PurchaseOrder = PurchaseOrder;
+      toPurchaseOrderItem     : Association to PurchaseOrderItem
+                                  on  toPurchaseOrderItem.PurchaseOrder     = PurchaseOrder
+                                  and toPurchaseOrderItem.PurchaseOrderItem = PurchaseOrderItem;
+      toMaterial              : Association to MaterialMaster
+                                  on toMaterial.Material = Material;
+}
+
+// BKPF - Accounting Document Header
+@odata.draft.enabled
+entity AccountingDocumentHeader {
+  key AccountingDocument       : String(10); // BELNR
+  key FiscalYear               : String(4); // GJAHR
+
+      @mandatory
+      DocumentType             : String(2); // BLART
+
+      @mandatory
+      DocumentDate             : Date; // BLDAT
+
+      @mandatory
+      CompanyCode              : String(4); // BUKRS
+
+      toAccountingDocumentItem : Composition of many AccountingDocumentItem
+                                   on  toAccountingDocumentItem.AccountingDocument = AccountingDocument
+                                   and toAccountingDocumentItem.FiscalYear         = FiscalYear;
+}
+
+// BSEG - Accounting Document Item
+entity AccountingDocumentItem {
+  key AccountingDocument         : String(10); // BELNR
+  key FiscalYear                 : String(4); // GJAHR
+  key AccountingDocumentItem     : String(3); // BUZEI
+
+      @mandatory
+      Amount                     : Decimal(13, 2); // WRBTR
+
+      @mandatory
+      GLAccount                  : String(10); // HKONT
+
+      SupplierInvoice            : String(10); // Reference to RBKP
+
+      SupplierInvoiceItem        : String(6);
+
+      CostCenter                 : String(10);
+      Currency                   : String(5);
+
+      // Associations
+      toAccountingDocumentHeader : Association to AccountingDocumentHeader
+                                     on  toAccountingDocumentHeader.AccountingDocument = AccountingDocument
+                                     and toAccountingDocumentHeader.FiscalYear         = FiscalYear;
+      toSupplierInvoiceHeader    : Association to SupplierInvoiceHeader
+                                     on toSupplierInvoiceHeader.SupplierInvoice = SupplierInvoice;
+      toSupplierInvoiceItem      : Association to SupplierInvoiceItem
+                                     on  toSupplierInvoiceItem.SupplierInvoice     = SupplierInvoice
+                                     and toSupplierInvoiceItem.SupplierInvoiceItem = SupplierInvoiceItem;
 }

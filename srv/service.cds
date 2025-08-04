@@ -24,5 +24,9 @@ service PRService {
 
   entity PurchaseOrderItem                    as projection on uc.PurchaseOrderItem;
   entity MaterialDocument                    as projection on uc.MaterialDocument;
+  entity SupplierInvoiceHeader               as projection on uc.SupplierInvoiceHeader;
+  entity SupplierInvoiceItem               as projection on uc.SupplierInvoiceItem;
+  entity AccountingDocumentHeader               as projection on uc.AccountingDocumentHeader;
+  entity AccountingDocumentItem               as projection on uc.AccountingDocumentItem;
   
 }

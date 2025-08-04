@@ -11,7 +11,8 @@ module.exports = cds.service.impl(async function () {
     PurchaseOrderHeader,
     PurchaseOrderItem,
     VendorMaster,
-    MaterialDocument
+    MaterialDocument,
+    SupplierInvoiceHeader
   } = this.entities;
 
   this.before(['CREATE', 'UPDATE'], PurchaseRequisition, async (req) => {
@@ -107,10 +108,6 @@ module.exports = cds.service.impl(async function () {
     }
   });
 
-  this.after(['UPDATE'], PurchaseRequisition, async (results, req) => {
-
-  });
-
   this.before(['CREATE', 'UPDATE'], PurchaseOrderHeader, async (req) => {
     const {
       Supplier,
@@ -201,9 +198,9 @@ module.exports = cds.service.impl(async function () {
         currentTotal += qty * np;
       }
 
-      const LIMIT = 1000000; 
+      const LIMIT = 1000000;
       const year = docDate.getFullYear();
-      const month = docDate.getMonth();          
+      const month = docDate.getMonth();
       const periodStart = new Date(year, month, 1);
       const periodEnd = new Date(year, month + 1, 0);
 
@@ -242,7 +239,7 @@ module.exports = cds.service.impl(async function () {
   });
 
   this.before(['CREATE', 'UPDATE'], MaterialDocument, async (req) => {
-    const { Material, Plant, StorageLocation, PurchaseOrder, PurchaseOrderItem, Quantity  } = req.data;
+    const { Material, Plant, StorageLocation, PurchaseOrder, PurchaseOrderItem, Quantity } = req.data;
 
     if (Material) {
       const materialExists = await SELECT.one.from('usedcar.MaterialMaster').where({ Material });
@@ -313,15 +310,170 @@ module.exports = cds.service.impl(async function () {
       if (Quantity <= 0) {
         req.error(400, `Quantity must be a positive value. Provided: ${Quantity}`, 'Quantity');
       }
-      
+
       if (PurchaseOrder && PurchaseOrderItem) {
         const purchaseOrderItemData = await SELECT.one.from('usedcar.PurchaseOrderItem')
           .where({ PurchaseOrder, PurchaseOrderItem });
-        
+
         if (purchaseOrderItemData && Quantity > purchaseOrderItemData.Quantity) {
           req.error(400, `Quantity ${Quantity} exceeds the available quantity ${purchaseOrderItemData.Quantity} in Purchase Order Item '${PurchaseOrderItem}'`, 'Quantity');
         }
       }
+    }
+  });
+
+  this.before(['CREATE', 'UPDATE'], SupplierInvoiceHeader, async (req) => {
+    const {
+      Supplier,
+      DocumentDate,
+      GrossAmount,
+      toSupplierInvoiceItem
+    } = req.data;
+
+    const db = cds.transaction(req);
+
+    try {
+
+      if (Supplier) {
+        const supplierExists = await db.exists(VendorMaster).where({ Supplier });
+        if (!supplierExists) {
+          req.error(400, `Supplier '${Supplier}' does not exist in Vendor Master`, 'Supplier');
+        }
+      }
+
+      if (GrossAmount !== undefined && GrossAmount !== null) {
+        const grossAmt = parseFloat(GrossAmount);
+        if (isNaN(grossAmt) || grossAmt <= 0) {
+          req.error(400, `Gross Amount must be a positive decimal. Provided: ${GrossAmount}`, 'GrossAmount');
+        }
+      }
+
+      if (DocumentDate) {
+        const docDate = new Date(DocumentDate);
+        const today = new Date();
+        today.setHours(23, 59, 59, 999); 
+
+        if (isNaN(docDate.getTime()) || docDate > today) {
+          req.error(400, `Document Date must be current or past date. Provided: ${DocumentDate}`, 'DocumentDate');
+        }
+      }
+
+      const invoiceItems = toSupplierInvoiceItem || [];
+      if (invoiceItems && invoiceItems.length > 0) {
+        let totalCalculatedAmount = 0;
+
+        for (const item of invoiceItems) {
+          const {
+            PurchaseOrder,
+            PurchaseOrderItem,
+            Material,
+            Quantity,
+            Amount
+          } = item;
+
+          if (PurchaseOrder) {
+            const purchaseOrderExists = await db.exists(PurchaseOrderHeader)
+              .where({ PurchaseOrder });
+            if (!purchaseOrderExists) {
+              req.error(400, `Purchase Order '${PurchaseOrder}' does not exist`, 'PurchaseOrder');
+            }
+          }
+
+          if (PurchaseOrder && PurchaseOrderItem) {
+            const purchaseOrderItemExists = await db.exists(PurchaseOrderItem)
+              .where({ PurchaseOrder, PurchaseOrderItem });
+            if (!purchaseOrderItemExists) {
+              req.error(400, `Purchase Order Item '${PurchaseOrderItem}' does not exist for Purchase Order '${PurchaseOrder}'`, 'PurchaseOrderItem');
+            }
+          }
+
+          if (Material) {
+            const materialExists = await db.exists(MaterialMaster).where({ Material });
+            if (!materialExists) {
+              req.error(400, `Material '${Material}' does not exist in Material Master`, 'Material');
+            }
+          }
+
+          if (Amount !== undefined && Amount !== null) {
+            const itemAmount = parseFloat(Amount);
+            if (isNaN(itemAmount) || itemAmount <= 0) {
+              req.error(400, `Item Amount must be a positive decimal. Provided: ${Amount}`, 'Amount');
+            }
+            totalCalculatedAmount += itemAmount;
+
+            if (PurchaseOrder && PurchaseOrderItem && Quantity) {
+              const purchaseOrderItemData = await db.run(
+                SELECT.one.from('usedcar.PurchaseOrderItem')
+                  .where({ PurchaseOrder, PurchaseOrderItem })
+              );
+
+              if (purchaseOrderItemData) {
+                const expectedAmount = parseFloat(purchaseOrderItemData.NetPrice) * parseFloat(Quantity);
+                const tolerance = 0.01; 
+
+                if (Math.abs(itemAmount - expectedAmount) > tolerance) {
+                  req.error(400, 
+                    `Invoice item amount ${itemAmount} does not match expected amount ${expectedAmount.toFixed(2)} ` +
+                    `(NetPrice ${purchaseOrderItemData.NetPrice} × Quantity ${Quantity})`, 
+                    'Amount'
+                  );
+                }
+              }
+            }
+          }
+
+          if (Quantity !== undefined && Quantity !== null) {
+            const qty = parseFloat(Quantity);
+            if (isNaN(qty) || qty <= 0) {
+              req.error(400, `Quantity must be a positive decimal. Provided: ${Quantity}`, 'Quantity');
+            }
+          }
+        }
+
+        if (GrossAmount && totalCalculatedAmount > 0) {
+          const grossAmt = parseFloat(GrossAmount);
+          const tolerance = 0.01; 
+
+          if (Math.abs(grossAmt - totalCalculatedAmount) > tolerance) {
+            req.error(400, 
+              `Gross Amount ${grossAmt} does not match sum of item amounts ${totalCalculatedAmount.toFixed(2)}`, 
+              'GrossAmount'
+            );
+          }
+        }
+      }
+
+      if (Supplier && GrossAmount) {
+        const grossAmt = parseFloat(GrossAmount);
+
+        const SUPPLIER_CREDIT_LIMIT = 2000000; 
+
+        const existingInvoices = await db.run(
+          SELECT
+            .columns('GrossAmount')
+            .from('usedcar.SupplierInvoiceHeader')
+            .where({ 
+              Supplier,
+              SupplierInvoice: { '!=': req.data.SupplierInvoice || 'NEW' } 
+            })
+        );
+
+        let totalOutstanding = 0;
+        for (const invoice of existingInvoices) {
+          totalOutstanding += parseFloat(invoice.GrossAmount || 0);
+        }
+
+        if ((totalOutstanding + grossAmt) > SUPPLIER_CREDIT_LIMIT) {
+          req.error(400, 
+            `Supplier '${Supplier}' has outstanding invoices of ${totalOutstanding.toFixed(2)}. ` +
+            `Adding this invoice (${grossAmt.toFixed(2)}) would exceed credit limit of ${SUPPLIER_CREDIT_LIMIT.toLocaleString()}`, 
+            'GrossAmount'
+          );
+        }
+      }
+
+    } catch (error) {
+      throw error;
     }
   });
 });
