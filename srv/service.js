@@ -10,7 +10,8 @@ module.exports = cds.service.impl(async function () {
     PurchasingDocumentType,
     PurchaseOrderHeader,
     PurchaseOrderItem,
-    VendorMaster
+    VendorMaster,
+    MaterialDocument
   } = this.entities;
 
   this.before(['CREATE', 'UPDATE'], PurchaseRequisition, async (req) => {
@@ -107,7 +108,7 @@ module.exports = cds.service.impl(async function () {
   });
 
   this.after(['UPDATE'], PurchaseRequisition, async (results, req) => {
-    // No after logic
+
   });
 
   this.before(['CREATE', 'UPDATE'], PurchaseOrderHeader, async (req) => {
@@ -120,7 +121,6 @@ module.exports = cds.service.impl(async function () {
 
     const db = cds.transaction(req);
 
-    // --- Supplier ---
     if (!Supplier) {
       req.error(400, `Supplier must be provided.`);
     }
@@ -128,7 +128,6 @@ module.exports = cds.service.impl(async function () {
       req.error(400, `Supplier '${Supplier}' does not exist.`);
     }
 
-    // --- PurchaseOrderType ---
     if (!PurchaseOrderType) {
       req.error(400, `PurchaseOrderType must be provided.`);
     }
@@ -136,7 +135,6 @@ module.exports = cds.service.impl(async function () {
       req.error(400, `Purchase Order Type '${PurchaseOrderType}' does not exist.`);
     }
 
-    // --- DocumentDate (today or past) ---
     if (!DocumentDate) {
       req.error(400, `DocumentDate must be provided.`);
     }
@@ -147,9 +145,6 @@ module.exports = cds.service.impl(async function () {
     }
 
     const purchaseOrderItems = req.data.toPurchaseOrderItem || [];
-    // console.log("Jaja " + JSON.stringify({
-    //   ...req.data,
-    // }))
 
     if (purchaseOrderItems && purchaseOrderItems.length) {
       let currentTotal = 0;
@@ -163,7 +158,6 @@ module.exports = cds.service.impl(async function () {
           NetPrice
         } = item;
 
-        // Material exists in MARA
         if (!Material) {
           req.error(400, `Each line must include a Material.`);
         }
@@ -171,7 +165,6 @@ module.exports = cds.service.impl(async function () {
           req.error(400, `Material '${Material}' does not exist.`);
         }
 
-        // PR exists & is released
         if (!PR) {
           req.error(400, `Each line must include a PurchaseRequisition.`);
         }
@@ -180,7 +173,6 @@ module.exports = cds.service.impl(async function () {
           req.error(400, `PurchaseRequisition '${PR}' not found or not released.`);
         }
 
-        // Plant & StorageLocation
         if (!plantCode) {
           req.error(400, `Each line must include a Plant.`);
         }
@@ -196,13 +188,11 @@ module.exports = cds.service.impl(async function () {
             `StorageLocation '${storageLoc}' does not exist for Plant '${plantCode}'.`);
         }
 
-        // Quantity: positive decimal
         const qty = parseFloat(Quantity);
         if (isNaN(qty) || qty <= 0) {
           req.error(400, `Quantity must be a positive number.`);
         }
 
-        // NetPrice: positive decimal
         const np = parseFloat(NetPrice);
         if (isNaN(np) || np <= 0) {
           req.error(400, `NetPrice must be a positive number.`);
@@ -211,13 +201,12 @@ module.exports = cds.service.impl(async function () {
         currentTotal += qty * np;
       }
 
-      const LIMIT = 1000000; // AUD
+      const LIMIT = 1000000; 
       const year = docDate.getFullYear();
-      const month = docDate.getMonth();          // 0-based
+      const month = docDate.getMonth();          
       const periodStart = new Date(year, month, 1);
       const periodEnd = new Date(year, month + 1, 0);
 
-      // find all other POs for this supplier in the same month
       const headers = await db.run(
         SELECT
           .columns('PurchaseOrder')
@@ -231,8 +220,6 @@ module.exports = cds.service.impl(async function () {
         .map(h => h.PurchaseOrder)
         .filter(pon => pon !== PurchaseOrder);
 
-
-      // console.log("otherPOs: ", JSON.stringify(otherPOs))
       let existingTotal = 0;
       if (otherPOs.length) {
         const itemsInPeriod = await db.run(
@@ -250,6 +237,90 @@ module.exports = cds.service.impl(async function () {
         req.error(400,
           `Supplier '${Supplier}' has committed ${existingTotal.toFixed(2)} AUD so far this month; ` +
           `adding this PO (${currentTotal.toFixed(2)} AUD) exceeds the ${LIMIT.toLocaleString()} AUD limit.`);
+      }
+    }
+  });
+
+  this.before(['CREATE', 'UPDATE'], MaterialDocument, async (req) => {
+    const { Material, Plant, StorageLocation, PurchaseOrder, PurchaseOrderItem, Quantity  } = req.data;
+
+    if (Material) {
+      const materialExists = await SELECT.one.from('usedcar.MaterialMaster').where({ Material });
+      if (!materialExists) {
+        req.error(400, `Material '${Material}' does not exist in Material Master`, 'Material');
+      }
+    }
+
+    if (Plant) {
+      const plantExists = await SELECT.one.from('usedcar.Plant').where({ Plant });
+      if (!plantExists) {
+        req.error(400, `Plant '${Plant}' does not exist in Plant Master`, 'Plant');
+      }
+    }
+
+    if (Plant && StorageLocation) {
+      const storageLocationExists = await SELECT.one.from('usedcar.StorageLocation')
+        .where({ Plant, StorageLocation });
+      if (!storageLocationExists) {
+        req.error(400, `Storage Location '${StorageLocation}' does not exist for Plant '${Plant}'`, 'StorageLocation');
+      }
+    }
+
+    if (PurchaseOrder) {
+      const purchaseOrderExists = await SELECT.one.from('usedcar.PurchaseOrderHeader')
+        .where({ PurchaseOrder });
+      if (!purchaseOrderExists) {
+        req.error(400, `Purchase Order '${PurchaseOrder}' does not exist`, 'PurchaseOrder');
+      }
+    }
+
+    if (PurchaseOrder && PurchaseOrderItem) {
+      const purchaseOrderItemExists = await SELECT.one.from('usedcar.PurchaseOrderItem')
+        .where({ PurchaseOrder, PurchaseOrderItem });
+      if (!purchaseOrderItemExists) {
+        req.error(400, `Purchase Order Item '${PurchaseOrderItem}' does not exist for Purchase Order '${PurchaseOrder}'`, 'PurchaseOrderItem');
+      }
+    }
+
+    if (PurchaseOrder && PurchaseOrderItem && Material) {
+      const purchaseOrderItemData = await SELECT.one.from('usedcar.PurchaseOrderItem')
+        .where({ PurchaseOrder, PurchaseOrderItem });
+
+      if (purchaseOrderItemData && purchaseOrderItemData.Material !== Material) {
+        req.error(400, `Material '${Material}' does not match the material '${purchaseOrderItemData.Material}' in Purchase Order Item`, 'Material');
+      }
+    }
+
+    if (PurchaseOrder && PurchaseOrderItem && Plant) {
+      const purchaseOrderItemData = await SELECT.one.from('usedcar.PurchaseOrderItem')
+        .where({ PurchaseOrder, PurchaseOrderItem });
+
+      if (purchaseOrderItemData && purchaseOrderItemData.Plant !== Plant) {
+        req.error(400, `Plant '${Plant}' does not match the plant '${purchaseOrderItemData.Plant}' in Purchase Order Item`, 'Plant');
+      }
+    }
+
+    if (PurchaseOrder && PurchaseOrderItem && StorageLocation) {
+      const purchaseOrderItemData = await SELECT.one.from('usedcar.PurchaseOrderItem')
+        .where({ PurchaseOrder, PurchaseOrderItem });
+
+      if (purchaseOrderItemData && purchaseOrderItemData.StorageLocation !== StorageLocation) {
+        req.error(400, `Storage Location '${StorageLocation}' does not match the storage location '${purchaseOrderItemData.StorageLocation}' in Purchase Order Item`, 'StorageLocation');
+      }
+    }
+
+    if (Quantity !== undefined && Quantity !== null) {
+      if (Quantity <= 0) {
+        req.error(400, `Quantity must be a positive value. Provided: ${Quantity}`, 'Quantity');
+      }
+      
+      if (PurchaseOrder && PurchaseOrderItem) {
+        const purchaseOrderItemData = await SELECT.one.from('usedcar.PurchaseOrderItem')
+          .where({ PurchaseOrder, PurchaseOrderItem });
+        
+        if (purchaseOrderItemData && Quantity > purchaseOrderItemData.Quantity) {
+          req.error(400, `Quantity ${Quantity} exceeds the available quantity ${purchaseOrderItemData.Quantity} in Purchase Order Item '${PurchaseOrderItem}'`, 'Quantity');
+        }
       }
     }
   });

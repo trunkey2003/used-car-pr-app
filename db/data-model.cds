@@ -212,14 +212,19 @@ entity MaterialDocument {
   key MaterialDocument      : String(10); // MBLNR
   key MaterialDocumentYear  : String(4); // MJAHR
   key MaterialDocumentItem  : String(4); // ZEILE
-
+      @mandatory
       Material              : String(40); // MATNR
+      @mandatory
       Plant                 : String(4); // WERKS
+      @mandatory
       StorageLocation       : String(4); // LGORT
+      @mandatory
       PurchaseOrder         : String(10); // EBELN
       PurchaseOrderItem     : String(5); // EBELP
+      @mandatory
       Quantity              : Decimal(13, 3); // MENGE
       BaseUnit              : String(3);
+      @mandatory
       MovementType          : String(3);
 
       // Associations into your masters
