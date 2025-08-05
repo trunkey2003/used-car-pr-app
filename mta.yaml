@@ -83,6 +83,10 @@ modules:
       - nsrbkplp.zip
       name: nsrbkplp
       target-path: app/
+    - artifacts:
+      - einalp.zip
+      name: einalp
+      target-path: app/
 - name: ns1ebanlp
   type: html5
   path: app/eban-lp
@@ -116,6 +120,16 @@ modules:
 - name: nsrbkplp
   type: html5
   path: app/rbkp-lp
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+- name: einalp
+  type: html5
+  path: app/eina-lp
   build-parameters:
     build-result: dist
     builder: custom

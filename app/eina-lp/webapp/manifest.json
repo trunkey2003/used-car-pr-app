@@ -1,0 +1,178 @@
+{
+  "_version": "1.65.0",
+  "sap.app": {
+    "id": "einalp",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "applicationVersion": {
+      "version": "0.0.1"
+    },
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "resources": "resources.json",
+    "sourceTemplate": {
+      "id": "@sap/generator-fiori:lrop",
+      "version": "1.18.4",
+      "toolsId": "96feda8f-3334-4b52-8189-9d1f146d502d"
+    },
+    "dataSources": {
+      "mainService": {
+        "uri": "/odata/v4/pr/",
+        "type": "OData",
+        "settings": {
+          "annotations": [],
+          "odataVersion": "4.0"
+        }
+      }
+    },
+    "crossNavigation": {
+      "inbounds": {
+        "PurchasingInfoRecord-display": {
+          "semanticObject": "PurchasingInfoRecord",
+          "action": "display",
+          "title": "{{PurchasingInfoRecord-display.flpTitle}}",
+          "subTitle": "{{PurchasingInfoRecord-display.flpSubtitle}}",
+          "signature": {
+            "parameters": {},
+            "additionalParameters": "allowed"
+          }
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "icons": {
+      "icon": "",
+      "favIcon": "",
+      "phone": "",
+      "phone@2": "",
+      "tablet": "",
+      "tablet@2": ""
+    },
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": true,
+    "dependencies": {
+      "minUI5Version": "1.138.1",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.fe.templates": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "einalp.i18n.i18n"
+        }
+      },
+      "": {
+        "dataSource": "mainService",
+        "preload": true,
+        "settings": {
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
+      },
+      "@i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "uri": "i18n/i18n.properties"
+      }
+    },
+    "resources": {
+      "css": []
+    },
+    "routing": {
+      "config": {},
+      "routes": [
+        {
+          "pattern": ":?query:",
+          "name": "PurchasingInfoRecordList",
+          "target": "PurchasingInfoRecordList"
+        },
+        {
+          "pattern": "PurchasingInfoRecord({key}):?query:",
+          "name": "PurchasingInfoRecordObjectPage",
+          "target": "PurchasingInfoRecordObjectPage"
+        },
+        {
+          "pattern": "PurchasingInfoRecord({key})/toPurchasingConditions({key2}):?query:",
+          "name": "MaterialInfoRecordPurchasingConditionsObjectPage",
+          "target": "MaterialInfoRecordPurchasingConditionsObjectPage"
+        }
+      ],
+      "targets": {
+        "PurchasingInfoRecordList": {
+          "type": "Component",
+          "id": "PurchasingInfoRecordList",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/PurchasingInfoRecord",
+              "variantManagement": "Page",
+              "navigation": {
+                "PurchasingInfoRecord": {
+                  "detail": {
+                    "route": "PurchasingInfoRecordObjectPage"
+                  }
+                }
+              },
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "PurchasingInfoRecordObjectPage": {
+          "type": "Component",
+          "id": "PurchasingInfoRecordObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": {
+            "settings": {
+              "editableHeaderContent": false,
+              "contextPath": "/PurchasingInfoRecord",
+              "navigation": {
+                "toPurchasingConditions": {
+                  "detail": {
+                    "route": "MaterialInfoRecordPurchasingConditionsObjectPage"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "MaterialInfoRecordPurchasingConditionsObjectPage": {
+          "type": "Component",
+          "id": "MaterialInfoRecordPurchasingConditionsObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": {
+            "settings": {
+              "editableHeaderContent": false,
+              "contextPath": "/PurchasingInfoRecord/toPurchasingConditions"
+            }
+          }
+        }
+      }
+    }
+  },
+  "sap.fiori": {
+    "registrationIds": [],
+    "archeType": "transactional"
+  }
+}

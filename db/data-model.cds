@@ -77,6 +77,10 @@ entity MaterialMaster {
                                   on MaterialDescription.Material = Material; // 1:1
       toPurchasingInfoRecords : Association to many PurchasingInfoRecord
                                   on toPurchasingInfoRecords.Material = Material;
+      toMaterialDocument      : Association to MaterialDocument
+                                  on toMaterialDocument.Material = Material; // 1:1
+      toPurchasingConditions  : Composition of many MaterialInfoRecordPurchasingConditions
+                                  on toPurchasingConditions.Material = Material;
 }
 
 // MAKT - Material Descriptions
@@ -88,10 +92,12 @@ entity MaterialDescription {
 
 // T001W - Plants/Branches
 entity Plant {
-  key Plant     : String(4); // WERKS
-      PlantName : String(30); // NAME1
-      City      : String(35); // ORT01
-      Country   : String(3); // LAND1
+  key Plant                  : String(4); // WERKS
+      PlantName              : String(30); // NAME1
+      City                   : String(35); // ORT01
+      Country                : String(3); // LAND1
+      toPurchasingConditions : Composition of many MaterialInfoRecordPurchasingConditions
+                                 on toPurchasingConditions.Plant = Plant;
 }
 
 // T001L - Storage Locations
@@ -116,19 +122,22 @@ entity PurchasingDocumentType {
 
 // EINA - Purchasing Info Record
 entity PurchasingInfoRecord {
-  key PurchasingInfoRecord : String(10); // INFNR
+  key PurchasingInfoRecord   : String(10); // INFNR
 
-      Material             : String(40); // foreign key
-      Supplier             : String(10); // foreign key
+      Material               : String(40); // foreign key
+      Supplier               : String(10); // foreign key
 
       // Associations based on foreign key fields
-      toMaterial           : Association to MaterialMaster
-                               on toMaterial.Material = Material;
-      toSupplier           : Association to VendorMaster
-                               on toSupplier.Supplier = Supplier;
+      toMaterial             : Association to MaterialMaster
+                                 on toMaterial.Material = Material;
+      toSupplier             : Association to VendorMaster
+                                 on toSupplier.Supplier = Supplier;
 
-      toPurchasingOrgInfo  : Association to many PurchasingOrgInfoRecord
-                               on toPurchasingOrgInfo.PurchasingInfoRecord = PurchasingInfoRecord;
+      toPurchasingOrgInfo    : Association to many PurchasingOrgInfoRecord
+                                 on toPurchasingOrgInfo.PurchasingInfoRecord = PurchasingInfoRecord;
+      toPurchasingConditions : Composition of many MaterialInfoRecordPurchasingConditions
+                                 on  toPurchasingConditions.Material = Material
+                                 and toPurchasingConditions.Supplier = Supplier;
 }
 
 // EINE - Purchasing Info Record - Org Data
@@ -144,11 +153,13 @@ entity PurchasingOrgInfoRecord {
 
 // LFA1 - Vendor Master
 entity VendorMaster {
-  key Supplier     : String(10); // LIFNR
-      SupplierName : String(35); // NAME1
-      Country      : String(3); // LAND1
-      City         : String(35); // ORT01
-      Street       : String(35); // STRAS
+  key Supplier               : String(10); // LIFNR
+      SupplierName           : String(35); // NAME1
+      Country                : String(3); // LAND1
+      City                   : String(35); // ORT01
+      Street                 : String(35); // STRAS
+      toPurchasingConditions : Composition of many MaterialInfoRecordPurchasingConditions
+                                 on toPurchasingConditions.Supplier = Supplier;
 }
 
 // EKKO - Purchase Order Header
@@ -251,26 +262,28 @@ entity MaterialDocument {
 // RBKP - Supplier Invoice Header
 @odata.draft.enabled
 entity SupplierInvoiceHeader {
-  key SupplierInvoice       : String(10); // BELNR
-  key FiscalYear            : String(4); // GJAHR
+  key SupplierInvoice          : String(10); // BELNR
+  key FiscalYear               : String(4); // GJAHR
 
       @mandatory
-      Supplier              : String(10); // LIFNR
+      Supplier                 : String(10); // LIFNR
 
       @mandatory
-      DocumentDate          : Date; // BLDAT
+      DocumentDate             : Date; // BLDAT
 
       @mandatory
-      GrossAmount           : Decimal(13, 2); // RMWWR
+      GrossAmount              : Decimal(13, 2); // RMWWR
 
       @mandatory
-      Currency              : String(5); // WAERS
+      Currency                 : String(5); // WAERS
 
       // Associations
-      toSupplier            : Association to VendorMaster
-                                on toSupplier.Supplier = Supplier;
-      toSupplierInvoiceItem : Composition of many SupplierInvoiceItem
-                                on toSupplierInvoiceItem.SupplierInvoice = SupplierInvoice;
+      toSupplier               : Association to VendorMaster
+                                   on toSupplier.Supplier = Supplier;
+      toSupplierInvoiceItem    : Composition of many SupplierInvoiceItem
+                                   on toSupplierInvoiceItem.SupplierInvoice = SupplierInvoice;
+      toAccountingDocumentItem : Composition of many AccountingDocumentItem
+                                   on toAccountingDocumentItem.SupplierInvoice = SupplierInvoice;
 }
 
 // RSEG - Supplier Invoice Item
@@ -303,7 +316,6 @@ entity SupplierInvoiceItem {
 }
 
 // BKPF - Accounting Document Header
-@odata.draft.enabled
 entity AccountingDocumentHeader {
   key AccountingDocument       : String(10); // BELNR
   key FiscalYear               : String(4); // GJAHR
@@ -350,4 +362,26 @@ entity AccountingDocumentItem {
       toSupplierInvoiceItem      : Association to SupplierInvoiceItem
                                      on  toSupplierInvoiceItem.SupplierInvoice     = SupplierInvoice
                                      and toSupplierInvoiceItem.SupplierInvoiceItem = SupplierInvoiceItem;
+}
+
+// A017 - Material Info Record (Purchasing Conditions)
+entity MaterialInfoRecordPurchasingConditions {
+  key Application            : String(2); // KAPPL
+  key ConditionType          : String(4); // KSCHL
+  key Supplier               : String(10); // LIFNR
+  key Material               : String(40); // MATNR
+  key PurchasingOrganization : String(4); // EKORG
+  key Plant                  : String(4); // WERKS
+      PurchaseContract       : String(10); // KONNR
+
+      // Associations based on foreign key relationships
+      toSupplier             : Association to VendorMaster
+                                 on toSupplier.Supplier = Supplier;
+      toMaterial             : Association to MaterialMaster
+                                 on toMaterial.Material = Material;
+      toPlant                : Association to Plant
+                                 on toPlant.Plant = Plant;
+      toPurchasingInfoRecord : Association to PurchasingInfoRecord
+                                 on  toPurchasingInfoRecord.Supplier = Supplier
+                                 and toPurchasingInfoRecord.Material = Material;
 }

@@ -30,7 +30,8 @@
     "deploy": "cf deploy mta_archives/archive.mtar --retries 1",
     "watch-ekko-lp": "cds watch --open ekko-lp/webapp/index.html?sap-ui-xx-viewCache=false",
     "watch-mseg-lp": "cds watch --open mseg-lp/webapp/index.html?sap-ui-xx-viewCache=false",
-    "watch-rbkp-lp": "cds watch --open rbkp-lp/webapp/index.html?sap-ui-xx-viewCache=false"
+    "watch-rbkp-lp": "cds watch --open rbkp-lp/webapp/index.html?sap-ui-xx-viewCache=false",
+    "watch-eina-lp": "cds watch --open eina-lp/webapp/index.html?sap-ui-xx-viewCache=false"
   },
   "cds": {
     "requires": {
@@ -48,6 +49,7 @@
     "app/eban-lp",
     "app/ekko-lp",
     "app/mseg-lp",
-    "app/rbkp-lp"
+    "app/rbkp-lp",
+    "app/eina-lp"
   ]
 }
