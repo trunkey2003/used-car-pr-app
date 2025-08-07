@@ -121,10 +121,14 @@ entity PurchasingDocumentType {
 }
 
 // EINA - Purchasing Info Record
+@odata.draft.enabled
 entity PurchasingInfoRecord {
   key PurchasingInfoRecord   : String(10); // INFNR
 
+      @mandatory
       Material               : String(40); // foreign key
+
+      @mandatory
       Supplier               : String(10); // foreign key
 
       // Associations based on foreign key fields
@@ -143,7 +147,11 @@ entity PurchasingInfoRecord {
 // EINE - Purchasing Info Record - Org Data
 entity PurchasingOrgInfoRecord {
   key PurchasingInfoRecord   : String(10); // INFNR
+
+      @mandatory
   key PurchasingOrganization : String(4); // EKORG
+
+      @mandatory
       NetPrice               : Decimal(11, 2); // NETPR
       PriceUnit              : Decimal(5, 0); // PEINH
 
@@ -370,9 +378,11 @@ entity MaterialInfoRecordPurchasingConditions {
   key ConditionType          : String(4); // KSCHL
   key Supplier               : String(10); // LIFNR
   key Material               : String(40); // MATNR
+
+      @mandatory
   key PurchasingOrganization : String(4); // EKORG
   key Plant                  : String(4); // WERKS
-      PurchaseContract       : String(10); // KONNR
+  key PurchaseContract       : String(10); // KONNR
 
       // Associations based on foreign key relationships
       toSupplier             : Association to VendorMaster

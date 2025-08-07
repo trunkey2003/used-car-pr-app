@@ -12,7 +12,8 @@ module.exports = cds.service.impl(async function () {
     PurchaseOrderItem,
     VendorMaster,
     MaterialDocument,
-    SupplierInvoiceHeader
+    SupplierInvoiceHeader,
+    PurchasingInfoRecord
   } = this.entities;
 
   this.before(['CREATE', 'UPDATE'], PurchaseRequisition, async (req) => {
@@ -474,6 +475,116 @@ module.exports = cds.service.impl(async function () {
 
     } catch (error) {
       throw error;
+    }
+  });
+
+  this.before(['CREATE', 'UPDATE'], PurchasingInfoRecord, async (req) => {
+    const { Material, Supplier } = req.data;
+    
+    // Foreign Key Validation: Material exists in MaterialMaster (MARA)
+    if (Material) {
+      const materialExists = await SELECT.one.from('MaterialMaster').where({ Material });
+      if (!materialExists) {
+        req.error(400, `Material ${Material} does not exist in MaterialMaster (MARA)`);
+        return;
+      }
+    }
+    
+    // Foreign Key Validation: Supplier exists in VendorMaster (LFA1)
+    if (Supplier) {
+      const supplierExists = await SELECT.one.from('VendorMaster').where({ Supplier });
+      if (!supplierExists) {
+        req.error(400, `Supplier ${Supplier} does not exist in VendorMaster (LFA1)`);
+        return;
+      }
+    }
+    
+    // Validate associated PurchasingOrgInfoRecord data if present
+    if (req.data.toPurchasingOrgInfo && Array.isArray(req.data.toPurchasingOrgInfo)) {
+      for (const orgInfo of req.data.toPurchasingOrgInfo) {
+        const { PurchasingOrganization, NetPrice, PriceUnit } = orgInfo;
+        
+        // Foreign Key Validation: PurchasingOrganization exists in system configuration
+        // Note: Assuming there's a system configuration entity for purchasing organizations
+        // You may need to adjust this based on your actual system configuration entity
+        if (PurchasingOrganization) {
+          // This would typically check against a configuration table like T001K or similar
+          // For now, implementing basic format validation
+          if (!/^[A-Z0-9]{4}$/.test(PurchasingOrganization)) {
+            req.error(400, `Invalid Purchasing Organization format: ${PurchasingOrganization}. Must be 4 alphanumeric characters.`);
+            return;
+          }
+        }
+        
+        // Data Format Validation: NetPrice must be positive decimal
+        if (NetPrice !== undefined && NetPrice !== null) {
+          if (typeof NetPrice !== 'number' || NetPrice <= 0) {
+            req.error(400, `NetPrice must be a positive decimal value. Received: ${NetPrice}`);
+            return;
+          }
+          
+          // Purchasing Limits: Check NetPrice against threshold (AUD 100,000)
+          const PRICE_THRESHOLD = 100000.00;
+          if (NetPrice > PRICE_THRESHOLD) {
+            req.error(400, `NetPrice ${NetPrice} exceeds maximum allowed threshold of AUD ${PRICE_THRESHOLD.toLocaleString()}`);
+            return;
+          }
+          
+          // Optional: Check against historical prices for the same material-supplier combination
+          if (Material && Supplier) {
+            try {
+              const historicalPrices = await SELECT(['NetPrice'])
+                .from('PurchasingOrgInfoRecord')
+                .where({
+                  PurchasingInfoRecord: { 
+                    in: SELECT(['PurchasingInfoRecord'])
+                      .from('PurchasingInfoRecord')
+                      .where({ Material, Supplier })
+                  }
+                })
+                .orderBy('createdAt desc')
+                .limit(5);
+              
+              if (historicalPrices.length > 0) {
+                const avgHistoricalPrice = historicalPrices.reduce((sum, record) => sum + record.NetPrice, 0) / historicalPrices.length;
+                const priceVarianceThreshold = avgHistoricalPrice * 1.5; // 50% increase threshold
+                
+                if (NetPrice > priceVarianceThreshold) {
+                  req.error(400, `NetPrice ${NetPrice} significantly exceeds historical average of AUD ${avgHistoricalPrice.toFixed(2)}. Please review pricing.`);
+                  return;
+                }
+              }
+            } catch (error) {
+              // Log warning but don't fail the transaction for historical price check
+              console.warn('Could not validate against historical prices:', error.message);
+            }
+          }
+        }
+        
+        // Data Format Validation: PriceUnit must be positive integer
+        if (PriceUnit !== undefined && PriceUnit !== null) {
+          if (!Number.isInteger(PriceUnit) || PriceUnit <= 0) {
+            req.error(400, `PriceUnit must be a positive integer value. Received: ${PriceUnit}`);
+            return;
+          }
+        }
+      }
+    }
+    
+    // Additional validation for A017 (MaterialInfoRecordPurchasingConditions)
+    if (req.data.toPurchasingConditions && Array.isArray(req.data.toPurchasingConditions)) {
+      for (const condition of req.data.toPurchasingConditions) {
+        const { Plant } = condition;
+        
+        // Foreign Key Validation: Plant exists in T001W for A017
+        if (Plant) {
+          const plantExists = await SELECT.one.from('Plant').where({ Plant });
+          if (!plantExists) {
+            req.error(400, `Plant ${Plant} does not exist in Plant (T001W) for purchasing conditions`);
+            return;
+          }
+        }
+      }
     }
   });
 });
