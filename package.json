@@ -24,14 +24,14 @@
   },
   "scripts": {
     "start": "cds-serve",
-    "watch-eban-lp": "cds watch --open eban-lp/webapp/index.html?sap-ui-xx-viewCache=false",
     "undeploy": "cf undeploy used-car-pr-app --delete-services --delete-service-keys --delete-service-brokers",
     "build": "rimraf resources mta_archives && mbt build --mtar archive",
     "deploy": "cf deploy mta_archives/archive.mtar --retries 1",
-    "watch-ekko-lp": "cds watch --open ekko-lp/webapp/index.html?sap-ui-xx-viewCache=false",
-    "watch-mseg-lp": "cds watch --open mseg-lp/webapp/index.html?sap-ui-xx-viewCache=false",
-    "watch-rbkp-lp": "cds watch --open rbkp-lp/webapp/index.html?sap-ui-xx-viewCache=false",
-    "watch-eina-lp": "cds watch --open eina-lp/webapp/index.html?sap-ui-xx-viewCache=false",
+    "watch-assignment-1": "cds watch --open assignment-1/webapp/index.html?sap-ui-xx-viewCache=false",
+    "watch-assignment-2": "cds watch --open assignment-2/webapp/index.html?sap-ui-xx-viewCache=false",
+    "watch-assignment-3": "cds watch --open assignment-3/webapp/index.html?sap-ui-xx-viewCache=false",
+    "watch-assignment-4": "cds watch --open assignment-4/webapp/index.html?sap-ui-xx-viewCache=false",
+    "watch-assignment-5": "cds watch --open assignment-5/webapp/index.html?sap-ui-xx-viewCache=false",
     "watch-assignment-6": "cds watch --open assignment-6/webapp/index.html?sap-ui-xx-viewCache=false"
   },
   "cds": {
@@ -47,11 +47,11 @@
     }
   },
   "sapux": [
-    "app/eban-lp",
-    "app/ekko-lp",
-    "app/mseg-lp",
-    "app/rbkp-lp",
-    "app/eina-lp",
+    "app/assignment-1",
+    "app/assignment-2",
+    "app/assignment-3",
+    "app/assignment-4",
+    "app/assignment-5",
     "app/assignment-6"
   ]
 }

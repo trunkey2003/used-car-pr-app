@@ -1,0 +1,178 @@
+{
+  "_version": "1.65.0",
+  "sap.app": {
+    "id": "ns.rbkplp",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "applicationVersion": {
+      "version": "0.0.1"
+    },
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "resources": "resources.json",
+    "sourceTemplate": {
+      "id": "@sap/generator-fiori:lrop",
+      "version": "1.18.4",
+      "toolsId": "050c95ce-265c-4679-84a6-d2a2ff4f24da"
+    },
+    "dataSources": {
+      "mainService": {
+        "uri": "/odata/v4/pr/",
+        "type": "OData",
+        "settings": {
+          "annotations": [],
+          "odataVersion": "4.0"
+        }
+      }
+    },
+    "crossNavigation": {
+      "inbounds": {
+        "SupplierInvoiceHeader-display": {
+          "semanticObject": "SupplierInvoiceHeader",
+          "action": "display",
+          "title": "{{SupplierInvoiceHeader-display.flpTitle}}",
+          "subTitle": "{{SupplierInvoiceHeader-display.flpSubtitle}}",
+          "signature": {
+            "parameters": {},
+            "additionalParameters": "allowed"
+          }
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "icons": {
+      "icon": "",
+      "favIcon": "",
+      "phone": "",
+      "phone@2": "",
+      "tablet": "",
+      "tablet@2": ""
+    },
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": true,
+    "dependencies": {
+      "minUI5Version": "1.138.1",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.fe.templates": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "ns.rbkplp.i18n.i18n"
+        }
+      },
+      "": {
+        "dataSource": "mainService",
+        "preload": true,
+        "settings": {
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
+      },
+      "@i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "uri": "i18n/i18n.properties"
+      }
+    },
+    "resources": {
+      "css": []
+    },
+    "routing": {
+      "config": {},
+      "routes": [
+        {
+          "pattern": ":?query:",
+          "name": "SupplierInvoiceHeaderList",
+          "target": "SupplierInvoiceHeaderList"
+        },
+        {
+          "pattern": "SupplierInvoiceHeader({key}):?query:",
+          "name": "SupplierInvoiceHeaderObjectPage",
+          "target": "SupplierInvoiceHeaderObjectPage"
+        },
+        {
+          "pattern": "SupplierInvoiceHeader({key})/toSupplierInvoiceItem({key2}):?query:",
+          "name": "SupplierInvoiceItemObjectPage",
+          "target": "SupplierInvoiceItemObjectPage"
+        }
+      ],
+      "targets": {
+        "SupplierInvoiceHeaderList": {
+          "type": "Component",
+          "id": "SupplierInvoiceHeaderList",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/SupplierInvoiceHeader",
+              "variantManagement": "Page",
+              "navigation": {
+                "SupplierInvoiceHeader": {
+                  "detail": {
+                    "route": "SupplierInvoiceHeaderObjectPage"
+                  }
+                }
+              },
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "SupplierInvoiceHeaderObjectPage": {
+          "type": "Component",
+          "id": "SupplierInvoiceHeaderObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": {
+            "settings": {
+              "editableHeaderContent": false,
+              "contextPath": "/SupplierInvoiceHeader",
+              "navigation": {
+                "toSupplierInvoiceItem": {
+                  "detail": {
+                    "route": "SupplierInvoiceItemObjectPage"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "SupplierInvoiceItemObjectPage": {
+          "type": "Component",
+          "id": "SupplierInvoiceItemObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": {
+            "settings": {
+              "editableHeaderContent": false,
+              "contextPath": "/SupplierInvoiceHeader/toSupplierInvoiceItem"
+            }
+          }
+        }
+      }
+    }
+  },
+  "sap.fiori": {
+    "registrationIds": [],
+    "archeType": "transactional"
+  }
+}

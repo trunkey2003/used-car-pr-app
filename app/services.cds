@@ -1,12 +1,12 @@
 
-using from './eban-lp/annotations';
+using from './assignment-1/annotations';
 
-using from './ekko-lp/annotations';
+using from './assignment-2/annotations';
 
-using from './mseg-lp/annotations';
+using from './assignment-3/annotations';
 
-using from './rbkp-lp/annotations';
+using from './assignment-4/annotations';
 
-using from './eina-lp/annotations';
+using from './assignment-5/annotations';
 
 using from './assignment-6/annotations';

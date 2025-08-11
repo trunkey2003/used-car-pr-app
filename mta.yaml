@@ -93,7 +93,7 @@ modules:
       target-path: app/
 - name: ns1ebanlp
   type: html5
-  path: app/eban-lp
+  path: app/assignment-1
   build-parameters:
     build-result: dist
     builder: custom
@@ -103,7 +103,7 @@ modules:
     supported-platforms: []
 - name: nsekkolp
   type: html5
-  path: app/ekko-lp
+  path: app/assignment-2
   build-parameters:
     build-result: dist
     builder: custom
@@ -113,7 +113,7 @@ modules:
     supported-platforms: []
 - name: nsmseg
   type: html5
-  path: app/mseg-lp
+  path: app/assignment-3
   build-parameters:
     build-result: dist
     builder: custom
@@ -123,7 +123,7 @@ modules:
     supported-platforms: []
 - name: nsrbkplp
   type: html5
-  path: app/rbkp-lp
+  path: app/assignment-4
   build-parameters:
     build-result: dist
     builder: custom
@@ -133,7 +133,7 @@ modules:
     supported-platforms: []
 - name: einalp
   type: html5
-  path: app/eina-lp
+  path: app/assignment-5
   build-parameters:
     build-result: dist
     builder: custom
