@@ -87,6 +87,10 @@ modules:
       - einalp.zip
       name: einalp
       target-path: app/
+    - artifacts:
+      - nsassignment6.zip
+      name: nsassignment6
+      target-path: app/
 - name: ns1ebanlp
   type: html5
   path: app/eban-lp
@@ -130,6 +134,16 @@ modules:
 - name: einalp
   type: html5
   path: app/eina-lp
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+- name: nsassignment6
+  type: html5
+  path: app/assignment-6
   build-parameters:
     build-result: dist
     builder: custom
