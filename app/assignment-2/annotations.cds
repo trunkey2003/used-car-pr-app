@@ -1,8 +1,8 @@
-using PRService as service from '../../srv/service';
+using POManagementService as service from '../../srv/service';
 
 annotate service.PurchaseOrderHeader with @(
     // Filters on the List Report
-    UI.SelectionFields               : [
+    UI.SelectionFields #App1              : [
         Supplier,
         PurchasingGroup,
         DocumentDate,
@@ -10,7 +10,7 @@ annotate service.PurchaseOrderHeader with @(
     ],
 
     // Columns shown in the List Report table with navigation
-    UI.LineItem                      : [
+    UI.LineItem #App1                     : [
         {
             $Type: 'UI.DataField',
             Value: PurchaseOrder,
@@ -40,84 +40,85 @@ annotate service.PurchaseOrderHeader with @(
     ],
 
     // Default sorting by DocumentDate descending
-    UI.PresentationVariant           : {
+    UI.PresentationVariant #App1          : {
         SortOrder     : [{
             Property  : DocumentDate,
             Descending: true
         }],
-        Visualizations: ['@UI.LineItem']
+        Visualizations: ['@UI.LineItem#App1']
     },
 
     // Optional grouping or facets if desired
-    UI.Facets                        : [
+    UI.Facets #App1                       : [
         {
             $Type : 'UI.ReferenceFacet',
             Label : 'General Information',
             ID    : 'GeneralInformation',
-            Target: '@UI.FieldGroup#GeneralInformation',
+            Target: '@UI.FieldGroup#GeneralInformation_App1',
         },
         {
             $Type : 'UI.ReferenceFacet',
             Label : 'Items',
             ID    : 'Items',
-            Target: 'toPurchaseOrderItem/@UI.LineItem#Items',
+            Target: 'toPurchaseOrderItem/@UI.LineItem#Items_App1',
         },
         {
             $Type : 'UI.ReferenceFacet',
             Label : ' Supplier Details',
             ID    : 'SupplierDetails',
-            Target: '@UI.FieldGroup#SupplierDetails',
+            Target: '@UI.FieldGroup#SupplierDetails_App1',
         },
         {
             $Type : 'UI.ReferenceFacet',
             Label : 'PR Reference',
             ID    : 'PRReference',
-            Target: 'toPurchaseOrderItem/@UI.LineItem#PRReference',
+            Target: 'toPurchaseOrderItem/@UI.LineItem#PRReference_App1',
         },
         {
             $Type : 'UI.ReferenceFacet',
             Label : 'Pricing',
             ID    : 'Pricing',
-            Target: 'toPurchaseOrderItem/@UI.LineItem#Pricing',
+            Target: 'toPurchaseOrderItem/@UI.LineItem#Pricing_App1',
         },
     ],
-    UI.FieldGroup #GeneralInformation: {
+
+    UI.FieldGroup #GeneralInformation_App1: {
         $Type: 'UI.FieldGroupType',
         Data : [
             {
                 $Type: 'UI.DataField',
                 Value: Currency,
-                Label: 'Currency',
+                Label: 'Currency'
             },
             {
                 $Type: 'UI.DataField',
                 Value: DocumentCategory,
-                Label: 'DocumentCategory',
+                Label: 'DocumentCategory'
             },
             {
                 $Type: 'UI.DataField',
                 Value: DocumentDate,
-                Label: 'DocumentDate',
+                Label: 'DocumentDate'
             },
             {
                 $Type: 'UI.DataField',
                 Value: PaymentTerms,
-                Label: 'PaymentTerms',
+                Label: 'PaymentTerms'
             },
             {
                 $Type: 'UI.DataField',
                 Value: PurchaseOrder,
-                Label: 'PurchaseOrder',
+                Label: 'PurchaseOrder'
             },
             {
                 $Type: 'UI.DataField',
                 Value: PurchaseOrderType,
-                Label: 'PurchaseOrderType',
+                Label: 'PurchaseOrderType'
             },
             {
                 $Type: 'UI.DataField',
                 Value: PurchasingGroup,
-                Label: 'PurchasingGroup',
+                Label: 'PurchasingGroup'
             },
             {
                 $Type : 'UI.DataFieldWithNavigationPath',
@@ -127,13 +128,14 @@ annotate service.PurchaseOrderHeader with @(
             },
         ],
     },
-    UI.FieldGroup #Items             : {
+
+    UI.FieldGroup #Items_App1             : {
         $Type: 'UI.FieldGroupType',
         Data : [
             {
                 $Type: 'UI.DataField',
                 Value: toPurchaseOrderItem.BaseUnit,
-                Label: 'BaseUnit',
+                Label: 'BaseUnit'
             },
             {
                 $Type : 'UI.DataFieldWithNavigationPath',
@@ -144,22 +146,22 @@ annotate service.PurchaseOrderHeader with @(
             {
                 $Type: 'UI.DataField',
                 Value: toPurchaseOrderItem.NetPrice,
-                Label: 'NetPrice',
+                Label: 'NetPrice'
             },
             {
                 $Type: 'UI.DataField',
                 Value: toPurchaseOrderItem.Plant,
-                Label: 'Plant',
+                Label: 'Plant'
             },
             {
                 $Type: 'UI.DataField',
                 Value: toPurchaseOrderItem.PurchaseOrder,
-                Label: 'PurchaseOrder',
+                Label: 'PurchaseOrder'
             },
             {
                 $Type: 'UI.DataField',
                 Value: toPurchaseOrderItem.PurchaseOrderItem,
-                Label: 'PurchaseOrderItem',
+                Label: 'PurchaseOrderItem'
             },
             {
                 $Type : 'UI.DataFieldWithNavigationPath',
@@ -170,16 +172,17 @@ annotate service.PurchaseOrderHeader with @(
             {
                 $Type: 'UI.DataField',
                 Value: toPurchaseOrderItem.Quantity,
-                Label: 'Quantity',
+                Label: 'Quantity'
             },
             {
                 $Type: 'UI.DataField',
                 Value: toPurchaseOrderItem.StorageLocation,
-                Label: 'StorageLocation',
+                Label: 'StorageLocation'
             },
         ],
     },
-    UI.FieldGroup #SupplierDetails   : {
+
+    UI.FieldGroup #SupplierDetails_App1   : {
         $Type: 'UI.FieldGroupType',
         Data : [
             {
@@ -191,26 +194,27 @@ annotate service.PurchaseOrderHeader with @(
             {
                 $Type: 'UI.DataField',
                 Value: toVendorMaster.SupplierName,
-                Label: 'SupplierName',
+                Label: 'SupplierName'
             },
             {
                 $Type: 'UI.DataField',
                 Value: toVendorMaster.City,
-                Label: 'City',
+                Label: 'City'
             },
             {
                 $Type: 'UI.DataField',
                 Value: toVendorMaster.Country,
-                Label: 'Country',
+                Label: 'Country'
             },
             {
                 $Type: 'UI.DataField',
                 Value: toVendorMaster.Street,
-                Label: 'Street',
+                Label: 'Street'
             },
         ],
     },
-    UI.FieldGroup #PRReference       : {
+
+    UI.FieldGroup #PRReference_App1       : {
         $Type: 'UI.FieldGroupType',
         Data : [
             {
@@ -222,55 +226,55 @@ annotate service.PurchaseOrderHeader with @(
             {
                 $Type: 'UI.DataField',
                 Value: toPurchaseOrderItem.toPurchaseRequisition.PurchaseReqnItem,
-                Label: 'PurchaseReqnItem',
+                Label: 'PurchaseReqnItem'
             },
             {
                 $Type: 'UI.DataField',
                 Value: toPurchaseOrderItem.toPurchaseRequisition.PurchaseRequisitionType,
-                Label: 'PurchaseRequisitionType',
+                Label: 'PurchaseRequisitionType'
             },
             {
                 $Type: 'UI.DataField',
                 Value: toPurchaseOrderItem.toPurchaseRequisition.PurchasingGroup,
-                Label: 'PurchasingGroup',
+                Label: 'PurchasingGroup'
             },
             {
                 $Type: 'UI.DataField',
                 Value: toPurchaseOrderItem.toPurchaseRequisition.Quantity,
-                Label: 'Quantity',
+                Label: 'Quantity'
             },
             {
                 $Type: 'UI.DataField',
                 Value: toPurchaseOrderItem.toPurchaseRequisition.ReleaseStatus,
-                Label: 'ReleaseStatus',
+                Label: 'ReleaseStatus'
             },
             {
                 $Type: 'UI.DataField',
                 Value: toPurchaseOrderItem.toPurchaseRequisition.RequisitionDate,
-                Label: 'RequisitionDate',
+                Label: 'RequisitionDate'
             },
             {
                 $Type: 'UI.DataField',
                 Value: toPurchaseOrderItem.toPurchaseRequisition.Requisitioner,
-                Label: 'Requisitioner',
+                Label: 'Requisitioner'
             },
             {
                 $Type: 'UI.DataField',
                 Value: toPurchaseOrderItem.toPurchaseRequisition.StorageLocation,
-                Label: 'StorageLocation',
+                Label: 'StorageLocation'
             },
             {
                 $Type: 'UI.DataField',
                 Value: toPurchaseOrderItem.toPurchaseRequisition.Plant,
-                Label: 'Plant',
+                Label: 'Plant'
             },
             {
                 $Type: 'UI.DataField',
-                Value: toPurchaseOrderItem.toPurchaseRequisition.modifiedBy,
+                Value: toPurchaseOrderItem.toPurchaseRequisition.modifiedBy
             },
             {
                 $Type: 'UI.DataField',
-                Value: toPurchaseOrderItem.toPurchaseRequisition.modifiedAt,
+                Value: toPurchaseOrderItem.toPurchaseRequisition.modifiedAt
             },
             {
                 $Type : 'UI.DataFieldWithNavigationPath',
@@ -281,85 +285,90 @@ annotate service.PurchaseOrderHeader with @(
             {
                 $Type: 'UI.DataField',
                 Value: toPurchaseOrderItem.toPurchaseRequisition.BaseUnit,
-                Label: 'BaseUnit',
+                Label: 'BaseUnit'
             },
             {
                 $Type: 'UI.DataField',
-                Value: toPurchaseOrderItem.toPurchaseRequisition.createdAt,
+                Value: toPurchaseOrderItem.toPurchaseRequisition.createdAt
             },
             {
                 $Type: 'UI.DataField',
-                Value: toPurchaseOrderItem.toPurchaseRequisition.createdBy,
+                Value: toPurchaseOrderItem.toPurchaseRequisition.createdBy
             },
         ],
     },
-    UI.FieldGroup #Pricing           : {
+
+    UI.FieldGroup #Pricing_App1           : {
         $Type: 'UI.FieldGroupType',
         Data : [],
     },
-    UI.HeaderFacets                  : [{
+
+    UI.HeaderFacets #App1                 : [{
         $Type : 'UI.ReferenceFacet',
         Label : 'Header',
         ID    : 'Header',
-        Target: '@UI.FieldGroup#Header',
-    }, ],
-    UI.FieldGroup #Header            : {
+        Target: '@UI.FieldGroup#Header_App1',
+    }],
+
+    UI.FieldGroup #Header_App1            : {
         $Type: 'UI.FieldGroupType',
         Data : [
             {
                 $Type: 'UI.DataField',
                 Value: PurchaseOrder,
-                Label: 'PurchaseOrder',
+                Label: 'PurchaseOrder'
             },
             {
                 $Type : 'UI.DataFieldWithNavigationPath',
                 Value : Supplier,
                 Label : 'Supplier',
-                Target: 'toVendorMaster',
+                Target: 'toVendorMaster'
             },
             {
                 $Type: 'UI.DataField',
                 Value: DocumentDate,
-                Label: 'DocumentDate',
+                Label: 'DocumentDate'
             },
             {
                 $Type: 'UI.DataField',
                 Value: Currency,
-                Label: 'Currency',
+                Label: 'Currency'
             },
         ],
     },
-    UI.Identification                : [
+
+    UI.Identification #App1               : [
         {
             $Type      : 'UI.DataFieldForAction',
             Action     : 'PRService.approve',
             Label      : '{i18n>Approve}',
-            Determining: true,
+            Determining: true
         },
         {
             $Type      : 'UI.DataFieldForAction',
             Action     : 'PRService.reject',
             Label      : '{i18n>Reject1}',
-            Determining: true,
+            Determining: true
         },
     ],
-    UI.FieldGroup #Item              : {
+
+    UI.FieldGroup #Item_App1              : {
         $Type: 'UI.FieldGroupType',
         Data : [],
     },
 );
 
 annotate service.PurchaseOrderItem with @(
-    UI.LineItem #Items      : [
+    UI.LineItem #Items_App1      : [
         {
             $Type: 'UI.DataField',
             Value: PurchaseOrder,
-            Label: 'PurchaseOrder',
+            Label: 'PurchaseOrder'
         },
         {
             $Type: 'UI.DataField',
             Value: PurchaseOrderItem,
-            Label: 'PurchaseOrderItem',
+            Label: 'PurchaseOrderItem'
         },
         {
             $Type : 'UI.DataFieldWithNavigationPath',
@@ -370,17 +379,17 @@ annotate service.PurchaseOrderItem with @(
         {
             $Type: 'UI.DataField',
             Value: Quantity,
-            Label: 'Quantity',
+            Label: 'Quantity'
         },
         {
             $Type: 'UI.DataField',
             Value: StorageLocation,
-            Label: 'StorageLocation',
+            Label: 'StorageLocation'
         },
         {
             $Type: 'UI.DataField',
             Value: BaseUnit,
-            Label: 'BaseUnit',
+            Label: 'BaseUnit'
         },
         {
             $Type : 'UI.DataFieldWithNavigationPath',
@@ -391,24 +400,25 @@ annotate service.PurchaseOrderItem with @(
         {
             $Type: 'UI.DataField',
             Value: NetPrice,
-            Label: 'NetPrice',
+            Label: 'NetPrice'
         },
         {
             $Type: 'UI.DataField',
             Value: Plant,
-            Label: 'Plant',
+            Label: 'Plant'
         },
     ],
-    UI.LineItem #PRReference: [
+
+    UI.LineItem #PRReference_App1: [
         {
             $Type: 'UI.DataField',
             Value: PurchaseOrder,
-            Label: 'PurchaseOrder',
+            Label: 'PurchaseOrder'
         },
         {
             $Type: 'UI.DataField',
             Value: toPurchaseRequisition.PurchaseReqnItem,
-            Label: 'PurchaseReqnItem',
+            Label: 'PurchaseReqnItem'
         },
         {
             $Type : 'UI.DataFieldWithNavigationPath',
@@ -419,46 +429,46 @@ annotate service.PurchaseOrderItem with @(
         {
             $Type: 'UI.DataField',
             Value: toPurchaseRequisition.PurchaseRequisitionType,
-            Label: 'PurchaseRequisitionType',
+            Label: 'PurchaseRequisitionType'
         },
         {
             $Type: 'UI.DataField',
             Value: toPurchaseRequisition.PurchasingGroup,
-            Label: 'PurchasingGroup',
+            Label: 'PurchasingGroup'
         },
         {
             $Type: 'UI.DataField',
             Value: toPurchaseRequisition.Quantity,
-            Label: 'Quantity',
+            Label: 'Quantity'
         },
         {
             $Type: 'UI.DataField',
             Value: toPurchaseRequisition.ReleaseStatus,
-            Label: 'ReleaseStatus',
+            Label: 'ReleaseStatus'
         },
         {
             $Type: 'UI.DataField',
             Value: toPurchaseRequisition.RequisitionDate,
-            Label: 'RequisitionDate',
+            Label: 'RequisitionDate'
         },
         {
             $Type: 'UI.DataField',
             Value: toPurchaseRequisition.Requisitioner,
-            Label: 'Requisitioner',
+            Label: 'Requisitioner'
         },
         {
             $Type: 'UI.DataField',
             Value: toPurchaseRequisition.StorageLocation,
-            Label: 'StorageLocation',
+            Label: 'StorageLocation'
         },
         {
             $Type: 'UI.DataField',
             Value: toPurchaseRequisition.BaseUnit,
-            Label: 'BaseUnit',
+            Label: 'BaseUnit'
         },
         {
             $Type: 'UI.DataField',
-            Value: toPurchaseRequisition.createdAt,
+            Value: toPurchaseRequisition.createdAt
         },
         {
             $Type : 'UI.DataFieldWithNavigationPath',
@@ -469,42 +479,43 @@ annotate service.PurchaseOrderItem with @(
         {
             $Type: 'UI.DataField',
             Value: toPurchaseRequisition.Plant,
-            Label: 'Plant',
+            Label: 'Plant'
         },
         {
             $Type: 'UI.DataField',
-            Value: toPurchaseRequisition.modifiedAt,
+            Value: toPurchaseRequisition.modifiedAt
         },
         {
             $Type: 'UI.DataField',
-            Value: toPurchaseRequisition.modifiedBy,
+            Value: toPurchaseRequisition.modifiedBy
         },
     ],
-    UI.LineItem #Pricing    : [
+
+    UI.LineItem #Pricing_App1    : [
         {
             $Type: 'UI.DataField',
             Value: PurchaseOrder,
-            Label: 'PurchaseOrder',
+            Label: 'PurchaseOrder'
         },
         {
             $Type: 'UI.DataField',
             Value: PurchaseOrderItem,
-            Label: 'PurchaseOrderItem',
+            Label: 'PurchaseOrderItem'
         },
         {
             $Type: 'UI.DataField',
             Value: toPurchaseRequisition.toPurchasingInfoRecord.toPurchasingOrgInfo.PurchasingInfoRecord,
-            Label: 'PurchasingInfoRecord',
+            Label: 'PurchasingInfoRecord'
         },
         {
             $Type: 'UI.DataField',
             Value: toPurchaseRequisition.toPurchasingInfoRecord.toPurchasingOrgInfo.PurchasingOrganization,
-            Label: 'PurchasingOrganization',
+            Label: 'PurchasingOrganization'
         },
         {
             $Type: 'UI.DataField',
             Value: Quantity,
-            Label: 'Quantity',
+            Label: 'Quantity'
         },
         {
             $Type : 'UI.DataFieldWithNavigationPath',
@@ -515,7 +526,7 @@ annotate service.PurchaseOrderItem with @(
         {
             $Type: 'UI.DataField',
             Value: toPurchaseRequisition.toPurchasingInfoRecord.toPurchasingOrgInfo.NetPrice,
-            Label: 'NetPrice',
+            Label: 'NetPrice'
         },
     ],
 );

@@ -1,4 +1,4 @@
-using PRService as service from '../../srv/service';
+using PRManagementService as service from '../../srv/service';
 
 annotate service.PurchaseRequisition with @(
     UI.SelectionFields               : [

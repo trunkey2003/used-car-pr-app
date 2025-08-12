@@ -1,1 +1,1 @@
-using PRService as service from '../../srv/service';
+using SourcingRFQService as service from '../../srv/service';

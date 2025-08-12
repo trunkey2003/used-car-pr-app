@@ -1,4 +1,4 @@
-using PRService as service from '../../srv/service';
+using InfoRecordsManagementService as service from '../../srv/service';
 using from '../../db/data-model';
 
 annotate service.PurchasingInfoRecord with @(
