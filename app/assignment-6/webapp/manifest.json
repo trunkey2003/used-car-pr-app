@@ -13,11 +13,11 @@
     "sourceTemplate": {
       "id": "@sap/generator-fiori:lrop",
       "version": "1.18.4",
-      "toolsId": "d989bc45-582c-466d-8520-2e07de74b3e6"
+      "toolsId": "0915d42f-6fe8-4a36-ab7b-bb8982a1f690"
     },
     "dataSources": {
       "mainService": {
-        "uri": "/odata/v4/pr/",
+        "uri": "/odata/v4/sourcing-rfq/",
         "type": "OData",
         "settings": {
           "annotations": [],
@@ -92,11 +92,6 @@
           "pattern": "PurchaseOrderHeader({key}):?query:",
           "name": "PurchaseOrderHeaderObjectPage",
           "target": "PurchaseOrderHeaderObjectPage"
-        },
-        {
-          "pattern": "PurchaseOrderHeader({key})/toPurchaseOrderItem({key2}):?query:",
-          "name": "PurchaseOrderItemObjectPage",
-          "target": "PurchaseOrderItemObjectPage"
         }
       ],
       "targets": {
@@ -132,25 +127,7 @@
           "options": {
             "settings": {
               "editableHeaderContent": false,
-              "contextPath": "/PurchaseOrderHeader",
-              "navigation": {
-                "toPurchaseOrderItem": {
-                  "detail": {
-                    "route": "PurchaseOrderItemObjectPage"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "PurchaseOrderItemObjectPage": {
-          "type": "Component",
-          "id": "PurchaseOrderItemObjectPage",
-          "name": "sap.fe.templates.ObjectPage",
-          "options": {
-            "settings": {
-              "editableHeaderContent": false,
-              "contextPath": "/PurchaseOrderHeader/toPurchaseOrderItem"
+              "contextPath": "/PurchaseOrderHeader"
             }
           }
         }

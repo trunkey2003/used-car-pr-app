@@ -1,4 +1,4 @@
-using GRManagementService as service from '../../srv/service';
+using GRManagementService as service from '../../srv/PRManagementService/service';
 
 annotate service.MaterialDocument with @(
     UI.FieldGroup #GeneratedGroup: {

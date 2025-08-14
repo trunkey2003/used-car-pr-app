@@ -3,10 +3,9 @@ sap.ui.require(
         'sap/fe/test/JourneyRunner',
         'ns/assignment6/test/integration/FirstJourney',
 		'ns/assignment6/test/integration/pages/PurchaseOrderHeaderList',
-		'ns/assignment6/test/integration/pages/PurchaseOrderHeaderObjectPage',
-		'ns/assignment6/test/integration/pages/PurchaseOrderItemObjectPage'
+		'ns/assignment6/test/integration/pages/PurchaseOrderHeaderObjectPage'
     ],
-    function(JourneyRunner, opaJourney, PurchaseOrderHeaderList, PurchaseOrderHeaderObjectPage, PurchaseOrderItemObjectPage) {
+    function(JourneyRunner, opaJourney, PurchaseOrderHeaderList, PurchaseOrderHeaderObjectPage) {
         'use strict';
         var JourneyRunner = new JourneyRunner({
             // start index.html in web folder
@@ -18,8 +17,7 @@ sap.ui.require(
             {
                 pages: { 
 					onThePurchaseOrderHeaderList: PurchaseOrderHeaderList,
-					onThePurchaseOrderHeaderObjectPage: PurchaseOrderHeaderObjectPage,
-					onThePurchaseOrderItemObjectPage: PurchaseOrderItemObjectPage
+					onThePurchaseOrderHeaderObjectPage: PurchaseOrderHeaderObjectPage
                 }
             },
             opaJourney.run

@@ -17,7 +17,7 @@
     },
     "dataSources": {
       "mainService": {
-        "uri": "/odata/v4/pr/",
+        "uri": "/odata/v4/grmanagement/",
         "type": "OData",
         "settings": {
           "annotations": [],

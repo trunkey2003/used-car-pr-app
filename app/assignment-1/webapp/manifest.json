@@ -1,7 +1,7 @@
 {
   "_version": "1.65.0",
   "sap.app": {
-    "id": "ns1.ebanlp",
+    "id": "ns1.assignment1",
     "type": "application",
     "i18n": "i18n/i18n.properties",
     "applicationVersion": {
@@ -17,7 +17,7 @@
     },
     "dataSources": {
       "mainService": {
-        "uri": "/odata/v4/pr/",
+        "uri": "/odata/v4/prmanagement/",
         "type": "OData",
         "settings": {
           "annotations": [],
@@ -74,7 +74,7 @@
       "i18n": {
         "type": "sap.ui.model.resource.ResourceModel",
         "settings": {
-          "bundleName": "ns1.ebanlp.i18n.i18n"
+          "bundleName": "ns1.assignment1.i18n.i18n"
         }
       },
       "": {
@@ -213,7 +213,7 @@
       "extensions": {
         "sap.ui.controllerExtensions": {
           "sap.fe.templates.ListReport.ListReportController": {
-            "controllerName": "ns1.ebanlp.ext.controller.ListReport"
+            "controllerName": "ns1.assignment1.ext.controller.ListReport"
           }
         }
       }

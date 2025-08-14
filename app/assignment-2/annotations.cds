@@ -1,8 +1,8 @@
-using POManagementService as service from '../../srv/service';
+using POManagementService as service from '../../srv/PRManagementService/service';
 
-annotate service.PurchaseOrderHeader with @(
+annotate service.PurchaseOrderHeader  with @(
     // Filters on the List Report
-    UI.SelectionFields #App1              : [
+    UI.SelectionFields              : [
         Supplier,
         PurchasingGroup,
         DocumentDate,
@@ -10,7 +10,7 @@ annotate service.PurchaseOrderHeader with @(
     ],
 
     // Columns shown in the List Report table with navigation
-    UI.LineItem #App1                     : [
+    UI.LineItem                     : [
         {
             $Type: 'UI.DataField',
             Value: PurchaseOrder,
@@ -40,16 +40,16 @@ annotate service.PurchaseOrderHeader with @(
     ],
 
     // Default sorting by DocumentDate descending
-    UI.PresentationVariant #App1          : {
+    UI.PresentationVariant          : {
         SortOrder     : [{
             Property  : DocumentDate,
             Descending: true
         }],
-        Visualizations: ['@UI.LineItem#App1']
+        Visualizations: ['@UI.LineItem']
     },
 
     // Optional grouping or facets if desired
-    UI.Facets #App1                       : [
+    UI.Facets                       : [
         {
             $Type : 'UI.ReferenceFacet',
             Label : 'General Information',
@@ -303,7 +303,7 @@ annotate service.PurchaseOrderHeader with @(
         Data : [],
     },
 
-    UI.HeaderFacets #App1                 : [{
+    UI.HeaderFacets                 : [{
         $Type : 'UI.ReferenceFacet',
         Label : 'Header',
         ID    : 'Header',
@@ -337,7 +337,7 @@ annotate service.PurchaseOrderHeader with @(
         ],
     },
 
-    UI.Identification #App1               : [
+    UI.Identification               : [
         {
             $Type      : 'UI.DataFieldForAction',
             Action     : 'PRService.approve',

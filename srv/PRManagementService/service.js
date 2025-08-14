@@ -1,8 +1,7 @@
 const cds = require('@sap/cds');
-const { SELECT } = cds;
 
 module.exports = {
-  'PRManagementService': function() {
+  'PRManagementService': function () {
     const {
       PurchaseRequisition,
       MaterialMaster,
@@ -108,12 +107,111 @@ module.exports = {
 
     this.on('approve', PurchaseRequisition, async (req) => {
       const { ID } = req.params[0];
-      // Add approval logic here
-      return `Purchase Requisition ${ID} approved successfully`;
+      const db = cds.transaction(req);
+
+      try {
+        // First, check if the PR exists and get its current status
+        const pr = await db.run(
+          SELECT.one.from(PurchaseRequisition).where({ ID })
+        );
+
+        if (!pr) {
+          req.error(404, `Purchase Requisition with ID '${ID}' not found.`);
+          return;
+        }
+
+        // Check if PR is already released
+        if (pr.ReleaseStatus === 'REL') {
+          req.error(400, `Purchase Requisition ${ID} is already approved.`);
+          return;
+        }
+
+        // Check if PR is in the correct status to be approved
+        if (pr.ReleaseStatus !== 'NOT_REL') {
+          req.error(400, `Purchase Requisition ${ID} cannot be approved. Current status: ${pr.ReleaseStatus}`);
+          return;
+        }
+
+        // Update the ReleaseStatus from "NOT_REL" to "REL"
+        const result = await db.run(
+          UPDATE(PurchaseRequisition)
+            .set({ ReleaseStatus: 'REL' })
+            .where({ ID })
+        );
+
+        // Check if the update was successful
+        if (result === 0) {
+          req.error(500, `Failed to update Purchase Requisition ${ID}.`);
+          return;
+        }
+
+        await db.commit();
+
+        // Log for debugging
+        console.log(`Purchase Requisition ${ID} approved successfully`);
+
+        req.notify('success', `Purchase Requisition ${ID} approved successfully`);
+
+        return `Purchase Requisition ${ID} approved successfully`;
+
+      } catch (error) {
+        await db.rollback();
+        console.error(`Error approving PR ${ID}:`, error);
+        req.error(500, `Error approving Purchase Requisition: ${error.message}`);
+      }
+    });
+
+    this.on('rejectCustom', PurchaseRequisition, async (req) => {
+      const { ID } = req.params[0];
+      const db = cds.transaction(req);
+
+      try {
+        // First, check if the PR exists and get its current status
+        const pr = await db.run(
+          SELECT.one.from(PurchaseRequisition).where({ ID })
+        );
+
+        if (!pr) {
+          req.error(404, `Purchase Requisition with ID '${ID}' not found.`);
+          return;
+        }
+
+        // Check if PR is already in NOT_REL status
+        if (pr.ReleaseStatus === 'NOT_REL') {
+          req.error(400, `Purchase Requisition ${ID} is already in NOT_REL status.`);
+          return;
+        }
+
+        // Update the ReleaseStatus to "NOT_REL"
+        const result = await db.run(
+          UPDATE(PurchaseRequisition)
+            .set({ ReleaseStatus: 'NOT_REL' })
+            .where({ ID })
+        );
+
+        // Check if the update was successful
+        if (result === 0) {
+          req.error(500, `Failed to update Purchase Requisition ${ID}.`);
+          return;
+        }
+
+        await db.commit();
+
+        // Log for debugging
+        console.log(`Purchase Requisition ${ID} rejected successfully`);
+
+        req.notify('success', `Purchase Requisition ${ID} rejected successfully`);
+        return `Purchase Requisition ${ID} rejected successfully`;
+
+      } catch (error) {
+        await db.rollback();
+        console.error(`Error rejecting PR ${ID}:`, error);
+        req.error(500, `Error rejecting Purchase Requisition: ${error.message}`);
+      }
     });
   },
 
-  'POManagementService': function() {
+  'POManagementService': function () {
     const {
       PurchaseOrderHeader,
       PurchaseOrderItem,
@@ -251,7 +349,7 @@ module.exports = {
     });
   },
 
-  'GRManagementService': function() {
+  'GRManagementService': function () {
     const {
       MaterialDocument,
       PurchaseOrderHeader,
@@ -337,7 +435,7 @@ module.exports = {
     this.before(['CREATE', 'UPDATE'], MaterialDocument, (req) => handleMaterialDocumentBefore(this, req));
   },
 
-  'InvoiceProcessingService': function() {
+  'InvoiceProcessingService': function () {
     const {
       SupplierInvoiceHeader,
       SupplierInvoiceItem,
@@ -475,7 +573,7 @@ module.exports = {
     this.before(['CREATE', 'UPDATE'], SupplierInvoiceHeader, (req) => handleSupplierInvoiceBefore(this, req));
   },
 
-  'InfoRecordsManagementService': function() {
+  'InfoRecordsManagementService': function () {
     const {
       PurchasingInfoRecord,
       PurchasingOrgInfoRecord,
@@ -516,7 +614,7 @@ module.exports = {
             const np = parsePositive(NetPrice);
             if (Number.isNaN(np)) return req.error(400, `NetPrice must be a positive decimal value. Received: ${NetPrice}`);
 
-            const PRICE_THRESHOLD = 100_000.0;
+            const PRICE_THRESHOLD = 100000;
             if (np > PRICE_THRESHOLD) {
               return req.error(400, `NetPrice ${np} exceeds maximum allowed threshold of AUD ${PRICE_THRESHOLD.toLocaleString()}`);
             }
@@ -537,7 +635,7 @@ module.exports = {
 
                 if (historicalPrices.length > 0) {
                   const avg = historicalPrices.reduce((s, r) => s + Number(r.NetPrice || 0), 0) / historicalPrices.length;
-                  const threshold = avg * 1.5; 
+                  const threshold = avg * 1.5;
                   if (np > threshold) {
                     return req.error(400, `NetPrice ${np} significantly exceeds historical average of AUD ${avg.toFixed(2)}. Please review pricing.`);
                   }
@@ -570,33 +668,27 @@ module.exports = {
     this.before(['CREATE', 'UPDATE'], PurchasingInfoRecord, (req) => handlePurchInfoRecordBefore(this, req));
   },
 
-  'SourcingRFQService': function() {
-    const {
-      RequestForQuotation,
-      PurchaseOrderItem,
-      MaterialMaster,
-      Plant,
-      VendorMaster,
-      PurchasingInfoRecord,
-      PurchasingOrgInfoRecord
-    } = this.entities;
+  // 'SourcingRFQService': function() {
+  //   const {
+  //     PurchaseOrderHeader,
+  //   } = this.entities;
 
-    this.before('CREATE', RequestForQuotation, async (req) => {
-      // Ensure DocumentCategory is set to "Q" for RFQs
-      req.data.DocumentCategory = 'Q';
-      console.log('Creating RFQ');
-    });
+  //   this.before('CREATE', PurchaseOrderHeader, async (req) => {
+  //     // Ensure DocumentCategory is set to "Q" for RFQs
+  //     req.data.DocumentCategory = 'Q';
+  //     console.log('Creating RFQ');
+  //   });
 
-    this.on('convertRFQToPR', async (req) => {
-      const { rfqId } = req.data;
-      // Add conversion logic from RFQ to PR
-      return `RFQ ${rfqId} converted to Purchase Requisition successfully`;
-    });
+  //   this.on('convertRFQToPR', async (req) => {
+  //     const { rfqId } = req.data;
+  //     // Add conversion logic from RFQ to PR
+  //     return `RFQ ${rfqId} converted to Purchase Requisition successfully`;
+  //   });
 
-    this.on('convertRFQToPO', async (req) => {
-      const { rfqId } = req.data;
-      // Add conversion logic from RFQ to PO
-      return `RFQ ${rfqId} converted to Purchase Order successfully`;
-    });
-  }
+  //   this.on('convertRFQToPO', async (req) => {
+  //     const { rfqId } = req.data;
+  //     // Add conversion logic from RFQ to PO
+  //     return `RFQ ${rfqId} converted to Purchase Order successfully`;
+  //   });
+  // }
 };

@@ -141,16 +141,6 @@ modules:
     - npm install
     - npm run build:cf
     supported-platforms: []
-- name: nsassignment6
-  type: html5
-  path: app/assignment-6
-  build-parameters:
-    build-result: dist
-    builder: custom
-    commands:
-    - npm install
-    - npm run build:cf
-    supported-platforms: []
 resources:
 - name: used-car-pr-app-auth
   type: org.cloudfoundry.managed-service

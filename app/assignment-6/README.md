@@ -1,15 +1,15 @@
 ## Application Details
 |               |
 | ------------- |
-|**Generation Date and Time**<br>Sun Aug 10 2025 16:03:37 GMT+0000 (Coordinated Universal Time)|
+|**Generation Date and Time**<br>Thu Aug 14 2025 06:51:02 GMT+0000 (Coordinated Universal Time)|
 |**App Generator**<br>SAP Fiori Application Generator|
 |**App Generator Version**<br>1.18.4|
 |**Generation Platform**<br>SAP Business Application Studio|
 |**Template Used**<br>List Report Page V4|
 |**Service Type**<br>Local CAP|
-|**Service URL**<br>http://localhost:4004/odata/v4/pr/|
+|**Service URL**<br>http://localhost:4004/odata/v4/sourcing-rfq/|
 |**Module Name**<br>assignment-6|
-|**Application Title**<br>App Title|
+|**Application Title**<br>Assignment 6|
 |**Namespace**<br>ns|
 |**UI5 Theme**<br>sap_horizon|
 |**UI5 Version**<br>1.139.0|
@@ -17,7 +17,7 @@
 |**Enable TypeScript**<br>False|
 |**Add Eslint configuration**<br>False|
 |**Main Entity**<br>PurchaseOrderHeader|
-|**Navigation Entity**<br>toPurchaseOrderItem|
+|**Navigation Entity**<br>None|
 
 ## assignment-6
 

@@ -1,5 +1,6 @@
-using PRManagementService as service from '../../srv/service';
+using PRManagementService as service from '../../srv/PRManagementService/service';
 
+// --- existing UI annotations (kept) ---
 annotate service.PurchaseRequisition with @(
     UI.SelectionFields               : [
         Material,
@@ -332,7 +333,6 @@ annotate service.PurchaseRequisition with @(
         ]
     },
 
-
     UI.Facets                        : [
         {
             $Type : 'UI.ReferenceFacet',
@@ -363,15 +363,76 @@ annotate service.PurchaseRequisition with @(
     UI.Identification                : [
         {
             $Type : 'UI.DataFieldForAction',
-            Action: 'PRService.approve',
+            Action: 'PRManagementService.approve',
             Label : '{i18n>Approve}'
         },
         {
             $Type : 'UI.DataFieldForAction',
-            Action: 'PRService.reject',
+            Action: 'PRManagementService.rejectCustom',
             Label : '{i18n>Reject}'
         }
-    ],
+    ]
+); // <-- removed the stray trailing comma before this line
 
+// --- NEW: Dynamic FieldControl for PR properties ---
+annotate service.PurchaseRequisition with {
+    Quantity      @(Common.FieldControl: {$edmJson: {$If: [
+        {$Eq: [
+            {$Path: 'ReleaseStatus'},
+            'NOT_REL'
+        ]},
+        1,
+        // ReadOnly when NOT_REL
+        3 // Editable otherwise
+    ]}});
 
-);
+    DeliveryDate  @(Common.FieldControl: {$edmJson: {$If: [
+        {$Eq: [
+            {$Path: 'ReleaseStatus'},
+            'NOT_REL'
+        ]},
+        1,
+        // ReadOnly when NOT_REL
+        3
+    ]}});
+
+    CreatedByUser @(Common.FieldControl: {$edmJson: {$If: [
+        {$Eq: [
+            {$Path: 'ReleaseStatus'},
+            'NOT_REL'
+        ]},
+        1,
+        3
+    ]}});
+};
+
+// --- NEW: AccountAssignments FieldControl (child uses backlink up_/...) ---
+annotate service.PurchaseRequisitionAccountAssignment with {
+    CostCenter @(Common.FieldControl: {$edmJson: {$If: [
+        {$Eq: [
+            {$Path: 'up_/ReleaseStatus'},
+            'NOT_REL'
+        ]},
+        3,
+        // Editable before approval
+        1 // ReadOnly after approval
+    ]}});
+
+    GLAccount  @(Common.FieldControl: {$edmJson: {$If: [
+        {$Eq: [
+            {$Path: 'up_/ReleaseStatus'},
+            'NOT_REL'
+        ]},
+        3,
+        1
+    ]}});
+
+    Order      @(Common.FieldControl: {$edmJson: {$If: [
+        {$Eq: [
+            {$Path: 'up_/ReleaseStatus'},
+            'NOT_REL'
+        ]},
+        3,
+        1
+    ]}});
+};

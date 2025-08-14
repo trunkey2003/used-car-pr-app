@@ -7,7 +7,7 @@
 |**Generation Platform**<br>SAP Business Application Studio|
 |**Template Used**<br>List Report Page V4|
 |**Service Type**<br>Local CAP|
-|**Service URL**<br>http://localhost:4004/odata/v4/pr/|
+|**Service URL**<br>http://localhost:4004/odata/v4/grmanagement/|
 |**Module Name**<br>assignment-3|
 |**Application Title**<br>MaterialDocument|
 |**Namespace**<br>ns|
