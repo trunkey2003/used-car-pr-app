@@ -79,19 +79,32 @@ service InfoRecordsManagementService {
   entity Plant                                  as projection on uc.Plant;
 }
 
-// 6. Sourcing & RFQ Management Service
+
+// 6. Sourcing & RFQ Management Service - ENHANCED
 service SourcingRFQService {
-  // entity PurchaseOrderHeader     as projection on uc.PurchaseOrderHeader
-  //   actions {
-  //     action approve() returns String;
-  //   };
+  // RFQ Header (PurchaseOrderHeader with DocumentCategory="Q")
+  entity PurchaseOrderHeader as projection on uc.PurchaseOrderHeader
+    where DocumentCategory = 'Q'
+    actions {
+      action sendRFQ()                returns String;
+      action closeRFQ()               returns String;
+      action convertToPR()            returns String;
+      action convertToPO()            returns String;
+    };
 
-  entity PurchaseOrderHeader     as
-    select from uc.PurchaseOrderHeader
-    where
-      DocumentCategory = 'Q';
-
+  // RFQ Items
   entity PurchaseOrderItem       as projection on uc.PurchaseOrderItem;
+  
+  // RFQ Quotes and Status - EXPOSE THESE ENTITIES
+  entity RFQQuote               as projection on uc.RFQQuote
+    actions {
+      action selectQuote()        returns String;
+      action rejectQuote()        returns String;
+    };
+    
+  entity RFQStatus              as projection on uc.RFQStatus;
+  
+  // Master Data
   entity PurchaseRequisition     as projection on uc.PurchaseRequisition;
   entity MaterialMaster          as projection on uc.MaterialMaster;
   entity MaterialDescription     as projection on uc.MaterialDescription;
@@ -102,4 +115,22 @@ service SourcingRFQService {
   entity VendorMaster            as projection on uc.VendorMaster;
   entity PurchasingInfoRecord    as projection on uc.PurchasingInfoRecord;
   entity PurchasingOrgInfoRecord as projection on uc.PurchasingOrgInfoRecord;
+  
+  // Functions for quote evaluation
+  function getQuoteComparison(rfqId: String) returns array of {
+    Supplier: String;
+    SupplierName: String;
+    NetPrice: Decimal(11,2);
+    DeliveryDate: Date;
+    TotalValue: Decimal(13,2);
+    Ranking: Integer;
+  };
+  
+  function validateRFQBudget(rfqId: String, estimatedValue: Decimal(13,2)) returns {
+    withinBudget: Boolean;
+    availableBudget: Decimal(13,2);
+    message: String;
+  };
 }
+
+

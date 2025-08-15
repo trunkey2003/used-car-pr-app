@@ -200,6 +200,10 @@ entity PurchaseOrderHeader {
                               on toPurchaseOrderItem.PurchaseOrder = PurchaseOrder;
       // toPurchaseOrder: Association to PurchaseRequisition
       //                         on toPurchaseOrderItem.PurchaseOrder = PurchaseOrder;
+      toRFQStatus         : Association to RFQStatus
+                              on toRFQStatus.PurchaseOrder = PurchaseOrder;
+      toRFQQuotes         : Association to many RFQQuote
+                              on toRFQQuotes.PurchaseOrder = PurchaseOrder;
 }
 
 // EKPO - Purchase Order Item
@@ -396,4 +400,69 @@ entity MaterialInfoRecordPurchasingConditions {
       toPurchasingInfoRecord : Association to PurchasingInfoRecord
                                  on  toPurchasingInfoRecord.Supplier = Supplier
                                  and toPurchasingInfoRecord.Material = Material;
+}
+
+
+// ZRFQ_QUOTE - Custom table for storing RFQ quotes
+entity RFQQuote : cuid, managed {
+  key RFQQuoteID          : String(10);
+
+      @mandatory
+      PurchaseOrder       : String(10); // Link to EKKO (RFQ)
+      PurchaseOrderItem   : String(5); // Link to EKPO
+
+      @mandatory
+      Supplier            : String(10); // Supplier who submitted the quote
+
+      @mandatory
+      Material            : String(40);
+
+      @mandatory
+      NetPrice            : Decimal(11, 2);
+      PriceUnit           : Decimal(5, 0) default 1;
+
+      @mandatory
+      DeliveryDate        : Date;
+
+      @mandatory
+      ValidityDate        : Date; // Quote validity end date
+
+      QuoteStatus         : String(10) default 'SUBMITTED'; // SUBMITTED, SELECTED, REJECTED
+
+      Currency            : String(5) default 'AUD';
+
+      // Additional quote details
+      PaymentTerms        : String(4);
+      DeliveryTerms       : String(20);
+      Comments            : String(1000);
+
+      // Associations
+      toPurchaseOrder     : Association to PurchaseOrderHeader
+                              on toPurchaseOrder.PurchaseOrder = PurchaseOrder;
+      toPurchaseOrderItem : Association to PurchaseOrderItem
+                              on  toPurchaseOrderItem.PurchaseOrder     = PurchaseOrder
+                              and toPurchaseOrderItem.PurchaseOrderItem = PurchaseOrderItem;
+      toSupplier          : Association to VendorMaster
+                              on toSupplier.Supplier = Supplier;
+      toMaterial          : Association to MaterialMaster
+                              on toMaterial.Material = Material;
+}
+
+// RFQ Status tracking
+entity RFQStatus : cuid, managed {
+  key PurchaseOrder    : String(10); // RFQ Number
+
+      @mandatory
+      Status           : String(20) default 'DRAFT'; // DRAFT, SENT, RESPONDED, EVALUATED, CLOSED
+
+      SentDate         : DateTime;
+      ResponseDeadline : DateTime;
+      EvaluationDate   : DateTime;
+      ClosedDate       : DateTime;
+
+      // Associations
+      toPurchaseOrder  : Association to PurchaseOrderHeader
+                           on toPurchaseOrder.PurchaseOrder = PurchaseOrder;
+      toQuotes         : Composition of many RFQQuote
+                           on toQuotes.PurchaseOrder = PurchaseOrder;
 }

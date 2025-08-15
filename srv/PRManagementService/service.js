@@ -773,27 +773,534 @@ module.exports = {
     this.before(['CREATE', 'UPDATE'], PurchasingInfoRecord, (req) => handlePurchInfoRecordBefore(this, req));
   },
 
-  // 'SourcingRFQService': function() {
-  //   const {
-  //     PurchaseOrderHeader,
-  //   } = this.entities;
+  'SourcingRFQService': function () {
+    const {
+      PurchaseOrderHeader,
+      PurchaseOrderItem,
+      RFQQuote,
+      RFQStatus,
+      MaterialMaster,
+      Plant,
+      PurchasingGroup,
+      VendorMaster,
+      PurchasingInfoRecord,
+      PurchasingOrgInfoRecord,
+      PurchaseRequisition
+    } = this.entities;
 
-  //   this.before('CREATE', PurchaseOrderHeader, async (req) => {
-  //     // Ensure DocumentCategory is set to "Q" for RFQs
-  //     req.data.DocumentCategory = 'Q';
-  //     console.log('Creating RFQ');
-  //   });
+    // Helper functions
+    const parsePositive = (v) => {
+      const n = parseFloat(v);
+      return Number.isFinite(n) && n > 0 ? n : NaN;
+    };
 
-  //   this.on('convertRFQToPR', async (req) => {
-  //     const { rfqId } = req.data;
-  //     // Add conversion logic from RFQ to PR
-  //     return `RFQ ${rfqId} converted to Purchase Requisition successfully`;
-  //   });
+    const exists = (db, entity, where) => db.exists(entity).where(where);
 
-  //   this.on('convertRFQToPO', async (req) => {
-  //     const { rfqId } = req.data;
-  //     // Add conversion logic from RFQ to PO
-  //     return `RFQ ${rfqId} converted to Purchase Order successfully`;
-  //   });
-  // }
+    const generateRFQNumber = async (db) => {
+      const lastRFQ = await db.run(
+        SELECT.one.from(PurchaseOrderHeader)
+          .columns('PurchaseOrder')
+          .where({ DocumentCategory: 'Q' })
+          .orderBy('PurchaseOrder desc')
+      );
+
+      const lastNum = lastRFQ ? parseInt(lastRFQ.PurchaseOrder.replace('RFQ', '')) : 0;
+      return `RFQ${String(lastNum + 1).padStart(7, '0')}`;
+    };
+
+    // === RFQ CREATION VALIDATION ===
+    this.before(['CREATE', 'UPDATE'], PurchaseOrderHeader, async (req) => {
+      const db = cds.transaction(req);
+      const {
+        Material,
+        Plant: plantCode,
+        PurchasingGroup: group,
+        Supplier,
+        DocumentDate,
+        toPurchaseOrderItem
+      } = req.data;
+
+      // Auto-set RFQ properties
+      req.data.DocumentCategory = 'Q';
+      req.data.PurchaseOrderType = 'RFQ';
+
+      if (!req.data.PurchaseOrder) {
+        req.data.PurchaseOrder = await generateRFQNumber(db);
+      }
+
+      // Validate master data
+      if (plantCode && !await exists(db, Plant, { Plant: plantCode })) {
+        req.error(400, `Plant '${plantCode}' does not exist.`);
+      }
+
+      if (group && !await exists(db, PurchasingGroup, { PurchasingGroup: group })) {
+        req.error(400, `Purchasing Group '${group}' does not exist.`);
+      }
+
+      // Validate RFQ items
+      const rfqItems = toPurchaseOrderItem || [];
+      if (rfqItems.length === 0) {
+        req.error(400, 'RFQ must contain at least one item.');
+      }
+
+      let totalEstimatedValue = 0;
+
+      for (const item of rfqItems) {
+        const { Material: itemMaterial, Plant: itemPlant, Quantity } = item;
+
+        if (!itemMaterial) req.error(400, 'Each RFQ item must include Material.');
+        if (!await exists(db, MaterialMaster, { Material: itemMaterial })) {
+          req.error(400, `Material '${itemMaterial}' does not exist.`);
+        }
+
+        if (!itemPlant) req.error(400, 'Each RFQ item must include Plant.');
+        if (!await exists(db, Plant, { Plant: itemPlant })) {
+          req.error(400, `Plant '${itemPlant}' does not exist.`);
+        }
+
+        const qty = parsePositive(Quantity);
+        if (Number.isNaN(qty)) req.error(400, 'Quantity must be positive.');
+
+        // Get estimated price from purchasing info records if available
+        let estimatedPrice = 0;
+        const infoRecord = await db.run(
+          SELECT.one.from(PurchasingInfoRecord).where({ Material: itemMaterial })
+        );
+
+        if (infoRecord) {
+          const orgInfo = await db.run(
+            SELECT.one.from(PurchasingOrgInfoRecord)
+              .where({ PurchasingInfoRecord: infoRecord.PurchasingInfoRecord })
+          );
+          if (orgInfo && orgInfo.NetPrice) {
+            estimatedPrice = parsePositive(orgInfo.NetPrice) / parsePositive(orgInfo.PriceUnit || 1);
+          }
+        }
+
+        // Use a default estimation if no info record exists
+        if (estimatedPrice === 0) estimatedPrice = 50000; // AUD 50k default for used cars
+
+        totalEstimatedValue += qty * estimatedPrice;
+      }
+
+      // Validate against purchasing limits
+      const MONTHLY_RFQ_LIMIT = 500000; // AUD 500k per Purchasing Group monthly
+
+      if (group && totalEstimatedValue > 0) {
+        const currentDate = new Date(DocumentDate || Date.now());
+        const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+        const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+
+        // Get existing RFQs for this purchasing group in current month
+        const existingRFQs = await db.run(
+          SELECT.from(PurchaseOrderHeader)
+            .where({
+              PurchasingGroup: group,
+              DocumentCategory: 'Q',
+              DocumentDate: { '>=': monthStart, '<=': monthEnd },
+              PurchaseOrder: { '!=': req.data.PurchaseOrder || 'NEW' }
+            })
+        );
+
+        let monthlyTotal = 0;
+        for (const rfq of existingRFQs) {
+          const items = await db.run(
+            SELECT.from(PurchaseOrderItem).where({ PurchaseOrder: rfq.PurchaseOrder })
+          );
+          for (const item of items) {
+            if (item.NetPrice && item.Quantity) {
+              monthlyTotal += parsePositive(item.NetPrice) * parsePositive(item.Quantity);
+            }
+          }
+        }
+
+        if ((monthlyTotal + totalEstimatedValue) > MONTHLY_RFQ_LIMIT) {
+          req.error(
+            400,
+            `Purchasing Group '${group}' has ${monthlyTotal.toFixed(2)} AUD in RFQs this month. ` +
+            `Adding this RFQ (est. ${totalEstimatedValue.toFixed(2)} AUD) exceeds monthly limit of ${MONTHLY_RFQ_LIMIT.toLocaleString()} AUD.`
+          );
+        }
+      }
+
+      // Create initial RFQ status
+      if (req.event === 'CREATE') {
+        await db.run(
+          INSERT.into(RFQStatus).entries({
+            PurchaseOrder: req.data.PurchaseOrder,
+            Status: 'DRAFT'
+          })
+        );
+      }
+    });
+
+    // === RFQ ACTIONS ===
+
+    // Send RFQ to suppliers
+    this.on('sendRFQ', PurchaseOrderHeader, async (req) => {
+      const { PurchaseOrder } = req.params[0];
+      const db = cds.transaction(req);
+
+      try {
+        // Validate RFQ exists and is in DRAFT status
+        const rfqStatus = await db.run(
+          SELECT.one.from(RFQStatus).where({ PurchaseOrder })
+        );
+
+        if (!rfqStatus) {
+          req.error(404, `RFQ ${PurchaseOrder} not found.`);
+          return;
+        }
+
+        if (rfqStatus.Status !== 'DRAFT') {
+          req.error(400, `RFQ ${PurchaseOrder} is not in DRAFT status. Current status: ${rfqStatus.Status}`);
+          return;
+        }
+
+        // Update status to SENT
+        await db.run(
+          UPDATE(RFQStatus)
+            .set({
+              Status: 'SENT',
+              SentDate: new Date().toISOString(),
+              ResponseDeadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString() // 14 days from now
+            })
+            .where({ PurchaseOrder })
+        );
+
+        // TODO: Implement email/SAP integration here
+        console.log(`RFQ ${PurchaseOrder} sent to suppliers`);
+
+        req.notify('success', `RFQ ${PurchaseOrder} sent successfully`);
+        return `RFQ ${PurchaseOrder} sent successfully`;
+
+      } catch (error) {
+        req.error(500, `Error sending RFQ: ${error.message}`);
+      }
+    });
+
+    // Close RFQ
+    this.on('closeRFQ', PurchaseOrderHeader, async (req) => {
+      const { PurchaseOrder } = req.params[0];
+      const db = cds.transaction(req);
+
+      try {
+        await db.run(
+          UPDATE(RFQStatus)
+            .set({
+              Status: 'CLOSED',
+              ClosedDate: new Date().toISOString()
+            })
+            .where({ PurchaseOrder })
+        );
+
+        req.notify('success', `RFQ ${PurchaseOrder} closed successfully`);
+        return `RFQ ${PurchaseOrder} closed successfully`;
+
+      } catch (error) {
+        req.error(500, `Error closing RFQ: ${error.message}`);
+      }
+    });
+
+    // Convert RFQ to Purchase Requisition
+    this.on('convertToPR', PurchaseOrderHeader, async (req) => {
+      const { PurchaseOrder } = req.params?.[0] || {};
+      const db = cds.transaction(req);
+
+      if (!PurchaseOrder) {
+        return req.reject(400, 'Missing PurchaseOrder in parameters.');
+      }
+
+      // Defaults (adjust to your customizing / master data)
+      const DEFAULT_PR_TYPE = 'NB';   // must exist in T161 / PurchasingDocumentType
+      const DEFAULT_PGROUP = '001';  // must exist in T024 / PurchasingGroup
+      const DEFAULT_REQSTR = (req.user && req.user.id ? String(req.user.id) : 'SYSTEM').slice(0, 12);
+      const DEFAULT_CREATEDBY = DEFAULT_REQSTR;
+
+      try {
+        // 1) Pull all SELECTED quotes for this RFQ number (PurchaseOrder)
+        const selectedQuotes = await db.run(
+          SELECT.from(RFQQuote)
+            .columns(
+              'PurchaseOrder',
+              'PurchaseOrderItem',
+              'Supplier',
+              'Material',
+              'NetPrice',
+              'PriceUnit',
+              'DeliveryDate',
+              'Currency'
+            )
+            .where({ PurchaseOrder, QuoteStatus: 'SELECTED' })
+        );
+
+        if (!selectedQuotes.length) {
+          return req.reject(400, `No selected quotes found for RFQ ${PurchaseOrder}.`);
+        }
+
+        // 2) For each quote, find the matching RFQ item for Plant/StorageLocation/Quantity/BaseUnit
+        //    and create/ensure a PR line.
+        const entries = [];
+        for (const q of selectedQuotes) {
+          // Fetch item data for this RFQ line
+          const it = await db.run(
+            SELECT.one.from(PurchaseOrderItem)
+              .columns('Plant', 'StorageLocation', 'Quantity', 'BaseUnit')
+              .where({ PurchaseOrder: q.PurchaseOrder, PurchaseOrderItem: q.PurchaseOrderItem })
+          );
+          if (!it) {
+            return req.reject(404, `RFQ Item ${q.PurchaseOrder}/${q.PurchaseOrderItem} not found.`);
+          }
+
+          // Build PR row (one line per selected quote)
+          const prRow = {
+            // Keys (reuse RFQ number + item as PR keys)
+            PurchaseRequisition: q.PurchaseOrder,       // String(10)
+            PurchaseReqnItem: q.PurchaseOrderItem,   // String(5)
+
+            // Mandatory business fields
+            Material: q.Material,
+            Plant: it.Plant,
+            StorageLocation: it.StorageLocation,
+            PurchasingGroup: DEFAULT_PGROUP,    // change if you can derive from header/item
+            PurchaseRequisitionType: DEFAULT_PR_TYPE,
+
+            Quantity: it.Quantity,
+            BaseUnit: it.BaseUnit,
+            DeliveryDate: q.DeliveryDate,
+
+            // Status & audit
+            ReleaseStatus: 'NOT_REL',
+            Requisitioner: DEFAULT_REQSTR,
+            RequisitionDate: new Date().toISOString().slice(0, 19), // your model is String(20)
+            CreatedByUser: DEFAULT_CREATEDBY
+          };
+
+          // Validate minimal required values
+          for (const f of [
+            'Material', 'Plant', 'StorageLocation', 'PurchasingGroup',
+            'PurchaseRequisitionType', 'Quantity', 'BaseUnit', 'DeliveryDate'
+          ]) {
+            if (prRow[f] == null || prRow[f] === '') {
+              return req.reject(400,
+                `Cannot create PR line ${q.PurchaseOrder}/${q.PurchaseOrderItem}: missing ${f}.`);
+            }
+          }
+
+          // Check if PR line already exists
+          const exists = await db.exists(PurchaseRequisition).where({
+            PurchaseRequisition: prRow.PurchaseRequisition,
+            PurchaseReqnItem: prRow.PurchaseReqnItem
+          });
+
+          if (!exists) {
+            entries.push(prRow);
+          } else {
+            // If you want to refresh fields on existing PR line, uncomment this:
+            await db.run(
+              UPDATE(PurchaseRequisition)
+                .set({
+                  Material: prRow.Material,
+                  Plant: prRow.Plant,
+                  StorageLocation: prRow.StorageLocation,
+                  PurchasingGroup: prRow.PurchasingGroup,
+                  PurchaseRequisitionType: prRow.PurchaseRequisitionType,
+                  Quantity: prRow.Quantity,
+                  BaseUnit: prRow.BaseUnit,
+                  DeliveryDate: prRow.DeliveryDate
+                })
+                .where({
+                  PurchaseRequisition: prRow.PurchaseRequisition,
+                  PurchaseReqnItem: prRow.PurchaseReqnItem
+                })
+            );
+          }
+        }
+
+        // 3) Bulk insert new PR lines (if any)
+        if (entries.length) {
+          await db.run(INSERT.into(PurchaseRequisition).entries(entries));
+        }
+
+        // 4) Optionally close the RFQ
+        await db.run(
+          UPDATE(RFQStatus)
+            .set({
+              Status: 'CLOSED',
+              ClosedDate: new Date().toISOString()
+            })
+            .where({ PurchaseOrder })
+        );
+
+        const msg = `RFQ ${PurchaseOrder} converted to PR successfully. ${entries.length} new PR line(s) created.`;
+        console.log(msg);
+        req.notify?.('success', msg);
+        return msg;
+
+      } catch (error) {
+        console.error('Error converting RFQ to PR:', error);
+        return req.reject(500, `Error converting RFQ to PR: ${error.message}`);
+      }
+    });
+
+
+    // Convert RFQ to Purchase Order
+    this.on('convertToPO', PurchaseOrderHeader, async (req) => {
+      const { PurchaseOrder } = req.params[0];
+      const db = cds.transaction(req);
+
+      try {
+        // Get selected quotes
+        const selectedQuotes = await db.run(
+          SELECT.from(RFQQuote)
+            .where({ PurchaseOrder, QuoteStatus: 'SELECTED' })
+        );
+
+        if (selectedQuotes.length === 0) {
+          req.error(400, 'No quotes selected for conversion to PO');
+          return;
+        }
+
+        // TODO: Implement PO creation logic based on selected quotes
+        // This would create a new PurchaseOrderHeader with DocumentCategory='F' (Standard PO)
+
+        req.notify('success', `RFQ ${PurchaseOrder} converted to PO successfully`);
+        return `RFQ ${PurchaseOrder} converted to PO successfully`;
+
+      } catch (error) {
+        req.error(500, `Error converting RFQ to PO: ${error.message}`);
+      }
+    });
+
+    // === QUOTE MANAGEMENT ===
+
+    this.on('selectQuote', RFQQuote, async (req) => {
+      const { PurchaseOrder } = req.params?.[0] || {};
+      const db = cds.transaction(req);
+
+      if (!PurchaseOrder) {
+        return req.reject(400, 'Missing PurchaseOrder in parameters.');
+      }
+
+      try {
+        // Find any one quote for this PO (could add filters if needed)
+        const quote = await db.run(
+          SELECT.one.from(RFQQuote).where({ PurchaseOrder })
+        );
+
+        if (!quote) {
+          return req.reject(404, `Quote not found for PurchaseOrder '${PurchaseOrder}'`);
+        }
+
+        // Mark all quotes for this PO as REJECTED first
+        await db.run(
+          UPDATE(RFQQuote)
+            .set({ QuoteStatus: 'REJECTED' })
+            .where({ PurchaseOrder })
+        );
+
+        // Mark the selected quote as SELECTED
+        await db.run(
+          UPDATE(RFQQuote)
+            .set({ QuoteStatus: 'SELECTED' })
+            .where({ PurchaseOrder })
+        );
+
+        // Update RFQ status
+        await db.run(
+          UPDATE(RFQStatus)
+            .set({
+              Status: 'EVALUATED',
+              EvaluationDate: new Date().toISOString()
+            })
+            .where({ PurchaseOrder })
+        );
+
+        const msg = `Winning quote for PurchaseOrder ${PurchaseOrder} selected successfully.`;
+        req.notify?.('success', msg);
+        return msg;
+
+      } catch (error) {
+        console.error('Error selecting quote:', error);
+        return req.reject(500, `Error selecting quote: ${error.message}`);
+      }
+    });
+
+    // === CUSTOM FUNCTIONS ===
+
+    // Get quote comparison
+    this.on('getQuoteComparison', async (req) => {
+      const { rfqId } = req.data;
+      const db = cds.transaction(req);
+
+      try {
+        const quotes = await db.run(
+          SELECT.from(RFQQuote)
+            .columns([
+              'Supplier',
+              'NetPrice',
+              'DeliveryDate',
+              'Material'
+            ])
+            .where({ PurchaseOrder: rfqId })
+        );
+
+        // Get supplier names and calculate rankings
+        const result = [];
+        for (let i = 0; i < quotes.length; i++) {
+          const quote = quotes[i];
+          const supplier = await db.run(
+            SELECT.one.from(VendorMaster).where({ Supplier: quote.Supplier })
+          );
+
+          // Get quantity from RFQ item
+          const rfqItem = await db.run(
+            SELECT.one.from(PurchaseOrderItem)
+              .where({
+                PurchaseOrder: rfqId,
+                Material: quote.Material
+              })
+          );
+
+          const quantity = parsePositive(rfqItem?.Quantity || 1);
+          const totalValue = parsePositive(quote.NetPrice) * quantity;
+
+          result.push({
+            Supplier: quote.Supplier,
+            SupplierName: supplier?.SupplierName || quote.Supplier,
+            NetPrice: quote.NetPrice,
+            DeliveryDate: quote.DeliveryDate,
+            TotalValue: totalValue,
+            Ranking: i + 1 // Simple ranking by order, could be enhanced
+          });
+        }
+
+        // Sort by total value (ascending - cheapest first)
+        result.sort((a, b) => a.TotalValue - b.TotalValue);
+        result.forEach((item, index) => item.Ranking = index + 1);
+
+        return result;
+
+      } catch (error) {
+        req.error(500, `Error getting quote comparison: ${error.message}`);
+      }
+    });
+
+    // Validate RFQ budget
+    this.on('validateRFQBudget', async (req) => {
+      const { rfqId, estimatedValue } = req.data;
+      const MONTHLY_LIMIT = 500000; // AUD 500k
+
+      // Simple validation - in reality would check against actual budgets
+      const withinBudget = estimatedValue <= MONTHLY_LIMIT;
+
+      return {
+        withinBudget,
+        availableBudget: MONTHLY_LIMIT - (withinBudget ? estimatedValue : 0),
+        message: withinBudget
+          ? 'RFQ is within budget limits'
+          : `RFQ exceeds monthly limit of ${MONTHLY_LIMIT.toLocaleString()} AUD`
+      };
+    });
+  }
 };
