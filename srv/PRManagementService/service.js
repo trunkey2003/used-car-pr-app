@@ -342,11 +342,116 @@ module.exports = {
 
     this.before(['CREATE', 'UPDATE'], PurchaseOrderHeader, (req) => handlePOHeaderBefore(this, req));
 
-    this.on('approve', PurchaseOrderHeader, async (req) => {
-      const { ID } = req.params[0];
-      // Add approval logic here
-      return `Purchase Order ${ID} approved successfully`;
+
+    // --- inside 'POManagementService': function () { ... } ---
+
+    // Helper to resolve one or many PR numbers from action params
+    async function resolvePRs(db, p, PurchaseOrderItem) {
+      // 1) Single item by ID
+      if (p.ID) {
+        const it = await db.run(SELECT.one.from(PurchaseOrderItem).where({ ID: p.ID }));
+        if (!it) throw Object.assign(new Error('Purchase Order item not found.'), { status: 404 });
+        return it.PurchaseRequisition ? [it.PurchaseRequisition] : [];
+      }
+      // 2) Single item by (PO, POItem)
+      if (p.PurchaseOrder && p.PurchaseOrderItem) {
+        const it = await db.run(
+          SELECT.one.from(PurchaseOrderItem).where({
+            PurchaseOrder: p.PurchaseOrder,
+            PurchaseOrderItem: p.PurchaseOrderItem
+          })
+        );
+        if (!it) throw Object.assign(new Error('Purchase Order item not found.'), { status: 404 });
+        return it.PurchaseRequisition ? [it.PurchaseRequisition] : [];
+      }
+      // 3) All PRs for a PO (your case)
+      if (p.PurchaseOrder) {
+        const rows = await db.run(
+          SELECT.from(PurchaseOrderItem)
+            .columns('PurchaseRequisition')
+            .where({ PurchaseOrder: p.PurchaseOrder })
+        );
+        const set = new Set(rows.map(r => r.PurchaseRequisition).filter(Boolean));
+        return Array.from(set);
+      }
+      throw Object.assign(new Error('Missing keys. Provide ID, (PurchaseOrder, PurchaseOrderItem) or (PurchaseOrder).'), { status: 400 });
+    }
+
+    // ---------- APPROVE: NOT_REL -> REL on linked PR(s) ----------
+    this.on('approve', PurchaseOrderItem, async (req) => {
+      const db = cds.transaction(req);
+      try {
+        const p = req.params?.[0] || {};
+        const prNumbers = await resolvePRs(db, p, PurchaseOrderItem);
+
+        if (!prNumbers.length) return req.reject(404, 'No linked Purchase Requisitions found.');
+
+        // Read current statuses
+        const current = await db.run(
+          SELECT.from(PurchaseRequisition)
+            .columns('PurchaseRequisition', 'ReleaseStatus')
+            .where({ PurchaseRequisition: { in: prNumbers } })
+        );
+        if (!current.length) return req.reject(404, 'Linked Purchase Requisitions not found.');
+
+        const eligible = current.filter(r => r.ReleaseStatus === 'NOT_REL').map(r => r.PurchaseRequisition);
+        if (!eligible.length) return req.reject(400, 'No PRs eligible for approval (already approved or invalid state).');
+
+        // Atomic bulk update
+        const affected = await db.run(
+          UPDATE(PurchaseRequisition)
+            .set({ ReleaseStatus: 'REL' })
+            .where({ PurchaseRequisition: { in: eligible }, ReleaseStatus: 'NOT_REL' })
+        );
+
+        const msg = `Approved ${affected} PR(s): ${eligible.join(', ')}`;
+        req.notify?.('success', msg);
+        return msg;
+      } catch (e) {
+        return req.reject(e.status || 500, `Error approving Purchase Order-linked PR(s): ${e.message}`);
+      }
     });
+
+    // ---------- REJECT: * -> NOT_REL on linked PR(s) ----------
+    this.on('rejectCustom', PurchaseOrderItem, async (req) => {
+      const db = cds.transaction(req);
+      try {
+        const p = req.params?.[0] || {};
+        const prNumbers = await resolvePRs(db, p, PurchaseOrderItem);
+
+        if (!prNumbers.length) return req.reject(404, 'No linked Purchase Requisitions found.');
+
+        const current = await db.run(
+          SELECT.from(PurchaseRequisition)
+            .columns('PurchaseRequisition', 'ReleaseStatus')
+            .where({ PurchaseRequisition: { in: prNumbers } })
+        );
+        if (!current.length) return req.reject(404, 'Linked Purchase Requisitions not found.');
+
+        const toRevert = current.filter(r => r.ReleaseStatus !== 'NOT_REL');
+        if (!toRevert.length) return req.reject(400, 'All linked PRs are already in NOT_REL.');
+
+        // Flip back with per-row guard to avoid races
+        let total = 0;
+        for (const r of toRevert) {
+          const n = await db.run(
+            UPDATE(PurchaseRequisition)
+              .set({ ReleaseStatus: 'NOT_REL' })
+              .where({ PurchaseRequisition: r.PurchaseRequisition, ReleaseStatus: r.ReleaseStatus })
+          );
+          total += n || 0;
+        }
+
+        const msg = `Rejected ${total} PR(s): ${toRevert.map(r => r.PurchaseRequisition).join(', ')}`;
+        req.notify?.('success', msg);
+        return msg;
+      } catch (e) {
+        return req.reject(e.status || 500, `Error rejecting Purchase Order-linked PR(s): ${e.message}`);
+      }
+    });
+
+
+
   },
 
   'GRManagementService': function () {

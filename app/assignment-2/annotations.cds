@@ -1,8 +1,8 @@
 using POManagementService as service from '../../srv/PRManagementService/service';
 
-annotate service.PurchaseOrderHeader  with @(
+annotate service.PurchaseOrderHeader with @(
     // Filters on the List Report
-    UI.SelectionFields              : [
+    UI.SelectionFields                    : [
         Supplier,
         PurchasingGroup,
         DocumentDate,
@@ -10,7 +10,7 @@ annotate service.PurchaseOrderHeader  with @(
     ],
 
     // Columns shown in the List Report table with navigation
-    UI.LineItem                     : [
+    UI.LineItem                           : [
         {
             $Type: 'UI.DataField',
             Value: PurchaseOrder,
@@ -40,7 +40,7 @@ annotate service.PurchaseOrderHeader  with @(
     ],
 
     // Default sorting by DocumentDate descending
-    UI.PresentationVariant          : {
+    UI.PresentationVariant                : {
         SortOrder     : [{
             Property  : DocumentDate,
             Descending: true
@@ -49,7 +49,7 @@ annotate service.PurchaseOrderHeader  with @(
     },
 
     // Optional grouping or facets if desired
-    UI.Facets                       : [
+    UI.Facets                             : [
         {
             $Type : 'UI.ReferenceFacet',
             Label : 'General Information',
@@ -239,9 +239,18 @@ annotate service.PurchaseOrderHeader  with @(
                 Label: 'PurchasingGroup'
             },
             {
-                $Type: 'UI.DataField',
-                Value: toPurchaseOrderItem.toPurchaseRequisition.Quantity,
-                Label: 'Quantity'
+                $Type                  : 'UI.DataField',
+                Value                  : toPurchaseOrderItem.toPurchaseRequisition.Quantity,
+                Label                  : 'Quantity',
+                ![@Common.FieldControl]: {$edmJson: {$If: [
+                    {$Eq: [
+                        {$Path: 'toPurchaseRequisition/ReleaseStatus'},
+                        'NOT_REL'
+                    ]},
+                    1,
+                    // ReadOnly
+                    3 // Editable
+                ]}}
             },
             {
                 $Type: 'UI.DataField',
@@ -277,10 +286,19 @@ annotate service.PurchaseOrderHeader  with @(
                 Value: toPurchaseOrderItem.toPurchaseRequisition.modifiedAt
             },
             {
-                $Type : 'UI.DataFieldWithNavigationPath',
-                Value : toPurchaseOrderItem.toPurchaseRequisition.Material,
-                Label : 'Material',
-                Target: 'toPurchaseOrderItem/toPurchaseRequisition/toMaterial'
+                $Type                  : 'UI.DataFieldWithNavigationPath',
+                Value                  : toPurchaseOrderItem.toPurchaseRequisition.Material,
+                Label                  : 'Material',
+                Target                 : 'toPurchaseOrderItem/toPurchaseRequisition/toMaterial',
+                ![@Common.FieldControl]: {$edmJson: {$If: [
+                    {$Eq: [
+                        {$Path: 'toPurchaseRequisition/ReleaseStatus'},
+                        'NOT_REL'
+                    ]},
+                    1,
+                    // ReadOnly
+                    3 // Editable
+                ]}}
             },
             {
                 $Type: 'UI.DataField',
@@ -303,7 +321,7 @@ annotate service.PurchaseOrderHeader  with @(
         Data : [],
     },
 
-    UI.HeaderFacets                 : [{
+    UI.HeaderFacets                       : [{
         $Type : 'UI.ReferenceFacet',
         Label : 'Header',
         ID    : 'Header',
@@ -337,7 +355,7 @@ annotate service.PurchaseOrderHeader  with @(
         ],
     },
 
-    UI.Identification               : [
+    UI.Identification                     : [
         {
             $Type      : 'UI.DataFieldForAction',
             Action     : 'PRService.approve',
@@ -437,9 +455,18 @@ annotate service.PurchaseOrderItem with @(
             Label: 'PurchasingGroup'
         },
         {
-            $Type: 'UI.DataField',
-            Value: toPurchaseRequisition.Quantity,
-            Label: 'Quantity'
+            $Type                  : 'UI.DataField',
+            Value                  : toPurchaseRequisition.Quantity,
+            Label                  : 'Quantity',
+            ![@Common.FieldControl]: {$edmJson: {$If: [
+                {$Eq: [
+                    {$Path: 'toPurchaseRequisition/ReleaseStatus'},
+                    'NOT_REL'
+                ]},
+                1,
+                // ReadOnly
+                3 // Editable
+            ]}}
         },
         {
             $Type: 'UI.DataField',
@@ -458,11 +485,6 @@ annotate service.PurchaseOrderItem with @(
         },
         {
             $Type: 'UI.DataField',
-            Value: toPurchaseRequisition.StorageLocation,
-            Label: 'StorageLocation'
-        },
-        {
-            $Type: 'UI.DataField',
             Value: toPurchaseRequisition.BaseUnit,
             Label: 'BaseUnit'
         },
@@ -471,10 +493,19 @@ annotate service.PurchaseOrderItem with @(
             Value: toPurchaseRequisition.createdAt
         },
         {
-            $Type : 'UI.DataFieldWithNavigationPath',
-            Value : toPurchaseRequisition.Material,
-            Label : 'Material',
-            Target: 'toPurchaseRequisition/toMaterial'
+            $Type                  : 'UI.DataFieldWithNavigationPath',
+            Value                  : toPurchaseRequisition.Material,
+            Label                  : 'Material',
+            Target                 : 'toPurchaseRequisition/toMaterial',
+            ![@Common.FieldControl]: {$edmJson: {$If: [
+                {$Eq: [
+                    {$Path: 'toPurchaseRequisition/ReleaseStatus'},
+                    'NOT_REL'
+                ]},
+                1,
+                // ReadOnly
+                3 // Editable
+            ]}}
         },
         {
             $Type: 'UI.DataField',
@@ -482,12 +513,16 @@ annotate service.PurchaseOrderItem with @(
             Label: 'Plant'
         },
         {
-            $Type: 'UI.DataField',
-            Value: toPurchaseRequisition.modifiedAt
+            $Type : 'UI.DataFieldForAction',
+            Action: 'POManagementService.approve',
+            Label : '{i18n>Approve1}',
+            Inline: true,
         },
         {
-            $Type: 'UI.DataField',
-            Value: toPurchaseRequisition.modifiedBy
+            $Type : 'UI.DataFieldForAction',
+            Action: 'POManagementService.rejectCustom',
+            Label : '{i18n>Rejectcustom}',
+            Inline: true,
         },
     ],
 

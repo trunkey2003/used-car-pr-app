@@ -4,7 +4,7 @@ using {usedcar as uc} from '../../db/data-model';
 service PRManagementService {
   entity PurchaseRequisition                  as projection on uc.PurchaseRequisition
     actions {
-      action approve() returns String;
+      action approve()      returns String;
       action rejectCustom() returns String;
     };
 
@@ -22,14 +22,16 @@ service PRManagementService {
 
 // 2. Purchase Order (PO) Management Service
 service POManagementService {
-  entity PurchaseOrderHeader     as projection on uc.PurchaseOrderHeader
+  entity PurchaseOrderHeader     as projection on uc.PurchaseOrderHeader;
+
+  entity PurchaseOrderItem       as projection on uc.PurchaseOrderItem
     actions {
-      action approve() returns String;
+      action approve()      returns String;
       action rejectCustom() returns String;
     };
 
-  entity PurchaseOrderItem       as projection on uc.PurchaseOrderItem;
-  entity PurchaseRequisition     as projection on uc.PurchaseRequisition;
+  entity PurchaseRequisition     as projection on uc.PurchaseRequisition
+
   entity MaterialMaster          as projection on uc.MaterialMaster;
   entity MaterialDescription     as projection on uc.MaterialDescription;
   entity Plant                   as projection on uc.Plant;

@@ -198,6 +198,8 @@ entity PurchaseOrderHeader {
                               on toPurchasingDocType.DocumentType = PurchaseOrderType;
       toPurchaseOrderItem : Composition of many PurchaseOrderItem
                               on toPurchaseOrderItem.PurchaseOrder = PurchaseOrder;
+      // toPurchaseOrder: Association to PurchaseRequisition
+      //                         on toPurchaseOrderItem.PurchaseOrder = PurchaseOrder;
 }
 
 // EKPO - Purchase Order Item
