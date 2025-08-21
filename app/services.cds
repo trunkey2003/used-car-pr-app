@@ -10,3 +10,5 @@ using from './assignment-4/annotations';
 using from './assignment-5/annotations';
 
 using from './assignment-6/annotations';
+
+using from './freestyle/annotations';

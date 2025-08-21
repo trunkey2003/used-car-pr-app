@@ -91,6 +91,10 @@ modules:
       - nsassignment6.zip
       name: nsassignment6
       target-path: app/
+    - artifacts:
+      - freestyle.zip
+      name: freestyle
+      target-path: app/
 - name: ns1ebanlp
   type: html5
   path: app/assignment-1
@@ -134,6 +138,16 @@ modules:
 - name: einalp
   type: html5
   path: app/assignment-5
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+- name: freestyle
+  type: html5
+  path: app/freestyle
   build-parameters:
     build-result: dist
     builder: custom

@@ -32,7 +32,8 @@
     "watch-assignment-3": "cds watch --open assignment-3/webapp/index.html?sap-ui-xx-viewCache=false",
     "watch-assignment-4": "cds watch --open assignment-4/webapp/index.html?sap-ui-xx-viewCache=false",
     "watch-assignment-5": "cds watch --open assignment-5/webapp/index.html?sap-ui-xx-viewCache=false",
-    "watch-assignment-6": "cds watch --open assignment-6/webapp/index.html?sap-ui-xx-viewCache=false"
+    "watch-assignment-6": "cds watch --open assignment-6/webapp/index.html?sap-ui-xx-viewCache=false",
+    "watch-freestyle": "cds watch --open freestyle/webapp/index.html?sap-ui-xx-viewCache=false"
   },
   "cds": {
     "requires": {
