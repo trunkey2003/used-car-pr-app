@@ -1,1 +1,505 @@
-/* Enter your custom styles here */
+/* Custom styles for Purchase Requisition Management App */
+
+/* Filter Panel Styling */
+.sapMPanel .sapMPanelContent {
+    padding: 1rem;
+}
+
+/* Table Enhancements */
+.sapMListTbl .sapMLIBContent {
+    padding: 0.5rem;
+}
+
+/* Status Indicator Colors */
+.sapMObjStatus[data-status="RELEASED"] .sapMObjStatusText {
+    color: #107e3e;
+    font-weight: bold;
+}
+
+.sapMObjStatus[data-status="OPEN"] .sapMObjStatusText {
+    color: #e9730c;
+    font-weight: bold;
+}
+
+.sapMObjStatus[data-status="CLOSED"] .sapMObjStatusText {
+    color: #6a6d70;
+    font-weight: bold;
+}
+
+/* Table Row Hover Effects */
+.sapMListTbl .sapMLIB:hover {
+    background-color: #f5f5f5;
+    cursor: pointer;
+}
+
+/* Button Spacing */
+.sapMBtn {
+    margin: 0.25rem;
+}
+
+/* Filter Bar Responsive Design */
+@media (max-width: 768px) {
+    .sapMHBox {
+        flex-direction: column;
+    }
+    
+    .sapMHBox > * {
+        margin-bottom: 0.5rem;
+        width: 100% !important;
+    }
+}
+
+/* Loading Indicator */
+.sapMBusyIndicator {
+    z-index: 1000;
+}
+
+/* Enhanced Panel Styling */
+.sapMPanel {
+    margin-bottom: 1rem;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+}
+
+.sapMPanel .sapMPanelHdr {
+    background-color: #f7f7f7;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+/* Table Toolbar */
+.sapMTB {
+    border-bottom: 1px solid #e5e5e5;
+    background-color: #fafafa;
+}
+
+/* Responsive Table */
+.sapMTable {
+    border: 1px solid #e5e5e5;
+}
+
+.sapMTable .sapMListHdr {
+    background-color: #f7f7f7;
+    border-bottom: 2px solid #0854a0;
+}
+
+/* Column Header Styling */
+.sapMListTbl .sapMListTblHeaderCell {
+    font-weight: bold;
+    color: #0854a0;
+    border-right: 1px solid #e5e5e5;
+}
+
+/* Action Buttons in Table */
+.sapMBtn.sapMBtnTransparent {
+    min-width: 2rem;
+    padding: 0.25rem;
+}
+
+/* Material Description Styling */
+.sapMText.sapUiContentPadding {
+    font-size: 0.875rem;
+    color: #6a6d70;
+    font-style: italic;
+}
+
+/* Object Number Styling */
+.sapMObjectNumber {
+    font-weight: bold;
+}
+
+/* Filter Input Styling */
+.sapMInputBase {
+    border-radius: 4px;
+}
+
+.sapMInputBase:focus {
+    border-color: #0854a0;
+    box-shadow: 0 0 0 0.125rem rgba(8, 84, 160, 0.25);
+}
+
+/* Date Picker Styling */
+.sapMDatePicker .sapMInputBase {
+    width: 100%;
+}
+
+/* Combo Box Styling */
+.sapMComboBox .sapMInputBase {
+    width: 100%;
+}
+
+/* Export Button Special Styling */
+.sapMBtn[data-button-type="export"] {
+    background-color: #0854a0;
+    color: white;
+}
+
+.sapMBtn[data-button-type="export"]:hover {
+    background-color: #0a5698;
+}
+
+/* Loading State */
+.sapMTable.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Page Layout */
+.sapMPage {
+    background-color: #f7f7f7;
+}
+
+.sapMPageContent {
+    padding: 0;
+}
+
+/* Enhanced Filter Section */
+.filter-section {
+    background: white;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+.filter-item {
+    display: flex;
+    flex-direction: column;
+    min-width: 150px;
+}
+
+.filter-item label {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #32363a;
+}
+
+/* Action Buttons Container */
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+/* Table Container */
+.table-container {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+/* Toolbar Enhancements */
+.sapMTB.sapMTBStandard {
+    background: linear-gradient(to bottom, #fafafa, #f0f0f0);
+    border-bottom: 1px solid #d9d9d9;
+    padding: 0.5rem 1rem;
+}
+
+.sapMTB .sapMTitle {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #32363a;
+}
+
+/* Enhanced Table Styling */
+.sapMListTbl {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.sapMListTbl .sapMListTblHeaderRow {
+    background: linear-gradient(to bottom, #f7f7f7, #eeeeee);
+    border-bottom: 2px solid #0854a0;
+}
+
+.sapMListTbl .sapMListTblHeaderCell {
+    padding: 0.75rem 0.5rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: #32363a;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-right: 1px solid #e0e0e0;
+}
+
+.sapMListTbl .sapMListTblHeaderCell:last-child {
+    border-right: none;
+}
+
+/* Table Row Styling */
+.sapMListTbl .sapMLIB {
+    border-bottom: 1px solid #f0f0f0;
+    transition: all 0.2s ease;
+}
+
+.sapMListTbl .sapMLIB:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.sapMListTbl .sapMLIB:nth-child(even) {
+    background-color: #fafbfc;
+}
+
+.sapMListTbl .sapMLIB:nth-child(even):hover {
+    background-color: #f0f2f5;
+}
+
+/* Cell Content */
+.sapMListTbl .sapMLIBContent {
+    padding: 0.75rem 0.5rem;
+}
+
+/* Object Identifier Styling */
+.sapMObjectIdentifier .sapMObjectIdentifierTitle {
+    font-weight: 600;
+    color: #0854a0;
+}
+
+.sapMObjectIdentifier .sapMObjectIdentifierText {
+    color: #6a6d70;
+    font-size: 0.875rem;
+}
+
+/* Status Object Styling */
+.sapMObjStatus {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sapMObjStatusSuccess {
+    background-color: #d5f2e3;
+    color: #107e3e;
+    border: 1px solid #107e3e;
+}
+
+.sapMObjStatusWarning {
+    background-color: #fef7f0;
+    color: #e9730c;
+    border: 1px solid #e9730c;
+}
+
+.sapMObjStatusError {
+    background-color: #ffeaea;
+    color: #bb0000;
+    border: 1px solid #bb0000;
+}
+
+.sapMObjStatusInformation {
+    background-color: #e1f4ff;
+    color: #0854a0;
+    border: 1px solid #0854a0;
+}
+
+.sapMObjStatusNone {
+    background-color: #f5f5f5;
+    color: #6a6d70;
+    border: 1px solid #6a6d70;
+}
+
+/* Object Number Enhanced */
+.sapMObjectNumber .sapMObjectNumberText {
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+/* Action Buttons in Rows */
+.table-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.table-actions .sapMBtn {
+    min-width: 2rem;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.table-actions .sapMBtn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Icon Colors */
+.sap-icon.edit-icon {
+    color: #0854a0;
+}
+
+.sap-icon.delete-icon {
+    color: #bb0000;
+}
+
+/* Material Description Box */
+.material-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.material-code {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: #32363a;
+}
+
+.material-description {
+    font-size: 0.75rem;
+    color: #6a6d70;
+    font-style: italic;
+    line-height: 1.2;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 1200px) {
+    .filter-row {
+        justify-content: space-between;
+    }
+    
+    .filter-item {
+        min-width: 200px;
+        flex: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .filter-row {
+        flex-direction: column;
+    }
+    
+    .filter-item {
+        width: 100%;
+        min-width: unset;
+    }
+    
+    .action-buttons {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .sapMListTbl .sapMListTblHeaderCell,
+    .sapMListTbl .sapMLIBContent {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.75rem;
+    }
+    
+    .table-actions {
+        flex-direction: column;
+        gap: 0.125rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .sapUiMediumMargin {
+        margin: 0.5rem;
+    }
+    
+    .sapMPanel .sapMPanelContent {
+        padding: 0.5rem;
+    }
+    
+    .sapMTB.sapMTBStandard {
+        padding: 0.5rem;
+    }
+    
+    .filter-section {
+        padding: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Loading and Empty States */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #6a6d70;
+}
+
+.empty-state .sap-icon {
+    font-size: 3rem;
+    color: #d5dadd;
+    margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+    color: #32363a;
+}
+
+.empty-state p {
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+/* Busy Indicator Override */
+.sapMBusyIndicator {
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+}
+
+/* Export Dialog Styling */
+.export-dialog .sapMDialog {
+    min-width: 400px;
+}
+
+.export-dialog .sapMDialogTitle {
+    color: #0854a0;
+    font-weight: 600;
+}
+
+/* Sort Dialog Enhancements */
+.sapMVSD .sapMVSDFilterBar {
+    background-color: #f7f7f7;
+}
+
+/* Scrollbar Styling for Webkit browsers */
+.sapMScrollContainer::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.sapMScrollContainer::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.sapMScrollContainer::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.sapMScrollContainer::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Animation Classes */
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-up {
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}

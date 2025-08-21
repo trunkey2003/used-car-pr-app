@@ -21,7 +21,8 @@
         "type": "OData",
         "settings": {
           "annotations": [],
-          "odataVersion": "4.0"
+          "odataVersion": "4.0",
+          "localUri": "localService/metadata.xml"
         }
       }
     }
@@ -43,12 +44,14 @@
     }
   },
   "sap.ui5": {
-    "flexEnabled": true,
+    "flexEnabled": false,
     "dependencies": {
       "minUI5Version": "1.139.0",
       "libs": {
         "sap.m": {},
-        "sap.ui.core": {}
+        "sap.ui.core": {},
+        "sap.ui.export": {},
+        "sap.suite.ui.commons": {}
       }
     },
     "contentDensities": {
@@ -68,7 +71,10 @@
         "settings": {
           "operationMode": "Server",
           "autoExpandSelect": true,
-          "earlyRequests": true
+          "earlyRequests": true,
+          "groupId": "$auto",
+          "updateGroupId": "$auto",
+          "synchronizationMode": "None"
         }
       }
     },
@@ -113,5 +119,9 @@
       "id": "App",
       "async": true
     }
+  },
+  "sap.fiori": {
+    "registrationIds": [],
+    "archeType": "transactional"
   }
 }
