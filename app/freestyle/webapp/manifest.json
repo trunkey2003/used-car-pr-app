@@ -94,7 +94,8 @@
         "type": "View",
         "viewType": "XML",
         "path": "freestyle.view",
-        "async": true
+        "async": true,
+        "viewPath": "freestyle.view"
       },
       "routes": [
         {
@@ -108,8 +109,7 @@
       "targets": {
         "TargetView1": {
           "id": "View1",
-          "name": "View1",
-          "viewType": "JS"
+          "name": "View1"
         }
       }
     },
