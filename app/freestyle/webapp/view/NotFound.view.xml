@@ -1,0 +1,17 @@
+<mvc:View controllerName="freestyle.controller.NotFound"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m">
+    
+    <Page title="Not Found" showNavButton="true" navButtonPress="onNavBack">
+        <content>
+            <IllustratedMessage
+                illustrationType="sapIllus-NotFound"
+                title="Not Found"
+                description="The requested Purchase Requisition could not be found. Please check the URL or go back to the main list.">
+                <additionalContent>
+                    <Button text="Go to Purchase Requisitions" press="onNavToList" type="Emphasized" />
+                </additionalContent>
+            </IllustratedMessage>
+        </content>
+    </Page>
+</mvc:View>

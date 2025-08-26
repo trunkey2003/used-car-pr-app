@@ -109,7 +109,7 @@
                 </columns>
 
                 <items>
-                    <ColumnListItem press="onItemPress">
+                    <ColumnListItem press="onItemPress" type="Navigation">
                         <cells>
                             <ObjectIdentifier title="{PurchaseRequisition}" />
                             <Text text="{PurchaseReqnItem}" />
@@ -136,7 +136,7 @@
                             <Text text="{Requisitioner}" />
                             <Text text="{
                                 path: 'createdAt',
-                                type: 'sap.ui.model.odata.type.DateTimeOffset'
+                                formatter: '.formatDateTime'
                             }" />
                             <HBox>
                                 <Button icon="sap-icon://edit" press="onEdit" type="Transparent" tooltip="Edit" />

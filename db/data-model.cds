@@ -1,13 +1,11 @@
 namespace usedcar;
 
 using {
-  cuid,
-  managed
-} from '@sap/cds/common';
+managed} from '@sap/cds/common';
 
 // EBAN - Purchase Requisition
 @odata.draft.enabled
-entity PurchaseRequisition : cuid, managed {
+entity PurchaseRequisition : managed {
   key PurchaseRequisition     : String(10);
   key PurchaseReqnItem        : String(5);
 
@@ -404,7 +402,7 @@ entity MaterialInfoRecordPurchasingConditions {
 
 
 // ZRFQ_QUOTE - Custom table for storing RFQ quotes
-entity RFQQuote : cuid, managed {
+entity RFQQuote : managed {
   key RFQQuoteID          : String(10);
 
       @mandatory
@@ -449,7 +447,7 @@ entity RFQQuote : cuid, managed {
 }
 
 // RFQ Status tracking
-entity RFQStatus : cuid, managed {
+entity RFQStatus : managed {
   key PurchaseOrder    : String(10); // RFQ Number
 
       @mandatory

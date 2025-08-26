@@ -41,8 +41,57 @@ sap.ui.define([
                 return;
             }
             
+            // Use standard OData v4 key syntax for composite keys
             const sObjectPath = `/PurchaseRequisition(PurchaseRequisition='${sPRNumber}',PurchaseReqnItem='${sPRItem}',IsActiveEntity=true)`;
+            console.log("Binding to path:", sObjectPath);
+            
             this._bindView(sObjectPath);
+        },
+
+        /**
+         * Alternative binding method using filters
+         * @param {string} sPath - The entity set path
+         * @param {sap.ui.model.Filter} oFilter - The filter to apply
+         */
+        _bindViewWithFilter(sPath, oFilter) {
+            const oView = this.getView();
+            const oModel = this.getOwnerComponent().getModel();
+            const oViewModel = oView.getModel("detailView");
+
+            oViewModel.setProperty("/busy", true);
+
+            // Create a list binding to get the single item
+            const oListBinding = oModel.bindList(sPath, null, null, [oFilter], {
+                $expand: "toMaterial,toPlant,toStorageLocation,toPurchasingGroup"
+            });
+
+            oListBinding.requestContexts(0, 1).then((aContexts) => {
+                if (aContexts && aContexts.length > 0) {
+                    // Bind the view to the found context
+                    oView.setBindingContext(aContexts[0]);
+                    oViewModel.setProperty("/busy", false);
+                    
+                    // Update title
+                    const oObject = aContexts[0].getObject();
+                    if (oObject) {
+                        const oDynamicPage = this.byId("dynamicPageId");
+                        if (oDynamicPage) {
+                            const oTitle = oDynamicPage.getTitle().getHeading();
+                            if (oTitle) {
+                                oTitle.setText(`Purchase Requisition ${oObject.PurchaseRequisition}-${oObject.PurchaseReqnItem}`);
+                            }
+                        }
+                    }
+                } else {
+                    oViewModel.setProperty("/busy", false);
+                    console.warn("No matching purchase requisition found");
+                    this.oRouter.getTargets().display("notFound");
+                }
+            }).catch((oError) => {
+                oViewModel.setProperty("/busy", false);
+                console.error("Error binding purchase requisition:", oError);
+                this.oRouter.getTargets().display("notFound");
+            });
         },
 
         /**
@@ -51,7 +100,6 @@ sap.ui.define([
          */
         _bindView(sObjectPath) {
             const oView = this.getView();
-            const oModel = this.getOwnerComponent().getModel();
             const oViewModel = oView.getModel("detailView");
 
             // Set busy indicator
@@ -60,18 +108,20 @@ sap.ui.define([
             oView.bindElement({
                 path: sObjectPath,
                 parameters: {
-                    $expand: "toMaterial/MaterialDescription,toPlant,toStorageLocation,toPurchasingGroup,AccountAssignments"
+                    $expand: "toMaterial,toPlant,toStorageLocation,toPurchasingGroup,AccountAssignments"
                 },
                 events: {
                     change: this._onBindingChange.bind(this),
                     dataRequested: () => {
+                        console.log("Data requested for:", sObjectPath);
                         oViewModel.setProperty("/busy", true);
                     },
                     dataReceived: (oEvent) => {
+                        const oData = oEvent.getParameter("data");
+                        console.log("Data received:", oData);
                         oViewModel.setProperty("/busy", false);
                         
                         // Check if data was received successfully
-                        const oData = oEvent.getParameter("data");
                         if (!oData) {
                             console.warn("No data received for binding");
                             this.oRouter.getTargets().display("notFound");
@@ -378,19 +428,6 @@ sap.ui.define([
          */
         getResourceBundle() {
             return this.getOwnerComponent().getModel("i18n").getResourceBundle();
-        },
-
-        onItemPress(oEvent) {
-            const oContext = oEvent.getSource().getBindingContext();
-            const sPRNumber = oContext.getProperty("PurchaseRequisition");
-            const sItem = oContext.getProperty("PurchaseReqnItem");
-            
-            // Navigate to detail page
-            const oRouter = this.getOwnerComponent().getRouter();
-            oRouter.navTo("DetailRoute", {
-                prNumber: sPRNumber,
-                prItem: sItem
-            });
-        },
+        }
     });
 });

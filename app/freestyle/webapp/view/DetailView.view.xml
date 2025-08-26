@@ -1,0 +1,259 @@
+<mvc:View controllerName="freestyle.controller.DetailView"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f"
+    xmlns:form="sap.ui.layout.form"
+    xmlns:core="sap.ui.core">
+    
+    <f:DynamicPage id="dynamicPageId" toggleHeaderOnTitleClick="false">
+        <!-- Header -->
+        <f:title>
+            <f:DynamicPageTitle>
+                <f:heading>
+                    <Title text="Purchase Requisition Detail" />
+                </f:heading>
+                <f:breadcrumbs>
+                    <Breadcrumbs>
+                        <Link text="Purchase Requisitions" press="onNavBack" />
+                        <Link text="PR {PurchaseRequisition}-{PurchaseReqnItem}" />
+                    </Breadcrumbs>
+                </f:breadcrumbs>
+                <f:actions>
+                    <Button text="Edit" icon="sap-icon://edit" press="onEdit" type="Emphasized" />
+                    <Button text="Delete" icon="sap-icon://delete" press="onDelete" />
+                    <Button text="Approve" icon="sap-icon://accept" press="onApprove" type="Accept" />
+                </f:actions>
+            </f:DynamicPageTitle>
+        </f:title>
+
+        <!-- Header Content -->
+        <f:header>
+            <f:DynamicPageHeader pinnable="true">
+                <HBox>
+                    <!-- Status Card -->
+                    <VBox class="sapUiMediumMarginEnd">
+                        <Title text="Status" level="H3" />
+                        <ObjectStatus text="{ReleaseStatus}" 
+                                     state="{
+                                        path: 'ReleaseStatus',
+                                        formatter: '.formatStatus'
+                                     }" />
+                    </VBox>
+
+                    <!-- Key Info Card -->
+                    <VBox class="sapUiMediumMarginEnd">
+                        <Title text="Key Information" level="H3" />
+                        <HBox>
+                            <VBox class="sapUiMediumMarginEnd">
+                                <Label text="PR Number:" />
+                                <Text text="{PurchaseRequisition}" />
+                            </VBox>
+                            <VBox class="sapUiMediumMarginEnd">
+                                <Label text="Item:" />
+                                <Text text="{PurchaseReqnItem}" />
+                            </VBox>
+                            <VBox>
+                                <Label text="Created Date:" />
+                                <Text text="{
+                                    path: 'createdAt',
+                                    formatter: '.formatDateTime'
+                                }" />
+                            </VBox>
+                        </HBox>
+                    </VBox>
+
+                    <!-- Quantity & Delivery Info -->
+                    <VBox>
+                        <Title text="Quantity &amp; Delivery" level="H3" />
+                        <HBox>
+                            <VBox class="sapUiMediumMarginEnd">
+                                <Label text="Quantity:" />
+                                <ObjectNumber number="{
+                                    path: 'Quantity',
+                                    type: 'sap.ui.model.odata.type.Decimal',
+                                    formatOptions: { minFractionDigits: 2, maxFractionDigits: 3 }
+                                }" unit="{BaseUnit}" />
+                            </VBox>
+                            <VBox>
+                                <Label text="Delivery Date:" />
+                                <Text text="{
+                                    path: 'DeliveryDate',
+                                    formatter: '.formatDate'
+                                }" />
+                            </VBox>
+                        </HBox>
+                    </VBox>
+                </HBox>
+            </f:DynamicPageHeader>
+        </f:header>
+
+        <!-- Content -->
+        <f:content>
+            <IconTabBar expanded="true" class="sapUiResponsiveContentPadding">
+                <items>
+                    <!-- General Information Tab -->
+                    <IconTabFilter key="general" text="General Information" icon="sap-icon://hint">
+                        <VBox class="sapUiMediumMargin">
+                            <!-- Material Information Panel -->
+                            <Panel headerText="Material Information" class="sapUiResponsiveMargin">
+                                <content>
+                                    <form:SimpleForm editable="false" layout="ResponsiveGridLayout" 
+                                                labelSpanXL="3" labelSpanL="3" labelSpanM="3" labelSpanS="12"
+                                                adjustLabelSpan="false" emptySpanXL="4" emptySpanL="4" 
+                                                emptySpanM="4" emptySpanS="0" columnsXL="1" columnsL="1" 
+                                                columnsM="1" singleContainerFullSize="false">
+                                        <form:content>
+                                            <Label text="Material Code:" />
+                                            <Text text="{Material}" />
+                                            
+                                            <Label text="Material Description:" />
+                                            <Text text="{toMaterial/MaterialDescription/MaterialDescription}" />
+                                            
+                                            <Label text="Material Type:" />
+                                            <Text text="{toMaterial/MaterialType}" />
+                                            
+                                            <Label text="Base Unit:" />
+                                            <Text text="{BaseUnit}" />
+                                            
+                                            <Label text="Material Group:" />
+                                            <Text text="{toMaterial/MaterialGroup}" />
+                                        </form:content>
+                                    </form:SimpleForm>
+                                </content>
+                            </Panel>
+
+                            <!-- Plant & Location Information Panel -->
+                            <Panel headerText="Plant &amp; Location Information" class="sapUiResponsiveMargin">
+                                <content>
+                                    <form:SimpleForm editable="false" layout="ResponsiveGridLayout" 
+                                                labelSpanXL="3" labelSpanL="3" labelSpanM="3" labelSpanS="12"
+                                                adjustLabelSpan="false" emptySpanXL="4" emptySpanL="4" 
+                                                emptySpanM="4" emptySpanS="0" columnsXL="1" columnsL="1" 
+                                                columnsM="1" singleContainerFullSize="false">
+                                        <form:content>
+                                            <Label text="Plant:" />
+                                            <Text text="{Plant}" />
+                                            
+                                            <Label text="Plant Name:" />
+                                            <Text text="{toPlant/PlantName}" />
+                                            
+                                            <Label text="Storage Location:" />
+                                            <Text text="{StorageLocation}" />
+                                            
+                                            <Label text="Storage Location Description:" />
+                                            <Text text="{toStorageLocation/StorageLocationDescription}" />
+                                        </form:content>
+                                    </form:SimpleForm>
+                                </content>
+                            </Panel>
+
+                            <!-- Purchasing Information Panel -->
+                            <Panel headerText="Purchasing Information" class="sapUiResponsiveMargin">
+                                <content>
+                                    <form:SimpleForm editable="false" layout="ResponsiveGridLayout" 
+                                                labelSpanXL="3" labelSpanL="3" labelSpanM="3" labelSpanS="12"
+                                                adjustLabelSpan="false" emptySpanXL="4" emptySpanL="4" 
+                                                emptySpanM="4" emptySpanS="0" columnsXL="1" columnsL="1" 
+                                                columnsM="1" singleContainerFullSize="false">
+                                        <form:content>
+                                            <Label text="Purchasing Group:" />
+                                            <Text text="{PurchasingGroup}" />
+                                            
+                                            <Label text="Purchasing Group Description:" />
+                                            <Text text="{toPurchasingGroup/PurchasingGroupDescription}" />
+                                            
+                                            <Label text="PR Type:" />
+                                            <Text text="{PurchaseRequisitionType}" />
+                                            
+                                            <Label text="Requisitioner:" />
+                                            <Text text="{Requisitioner}" />
+                                            
+                                            <Label text="Requisition Date:" />
+                                            <Text text="{RequisitionDate}" />
+                                            
+                                            <Label text="Created By:" />
+                                            <Text text="{CreatedByUser}" />
+                                        </form:content>
+                                    </form:SimpleForm>
+                                </content>
+                            </Panel>
+                        </VBox>
+                    </IconTabFilter>
+
+                    <!-- Account Assignment Tab -->
+                    <IconTabFilter key="accounting" text="Account Assignment" icon="sap-icon://accounting-document-verification">
+                        <VBox class="sapUiMediumMargin">
+                            <Panel headerText="Account Assignment Details" class="sapUiResponsiveMargin">
+                                <content>
+                                    <Table items="{AccountAssignments}" class="sapUiResponsiveMargin">
+                                        <columns>
+                                            <Column>
+                                                <Text text="Assignment" />
+                                            </Column>
+                                            <Column>
+                                                <Text text="Category" />
+                                            </Column>
+                                            <Column>
+                                                <Text text="GL Account" />
+                                            </Column>
+                                            <Column>
+                                                <Text text="Cost Center" />
+                                            </Column>
+                                            <Column>
+                                                <Text text="Order" />
+                                            </Column>
+                                        </columns>
+                                        <items>
+                                            <ColumnListItem>
+                                                <cells>
+                                                    <Text text="{AcctAssignment}" />
+                                                    <Text text="{AcctAssignmentCategory}" />
+                                                    <Text text="{GLAccount}" />
+                                                    <Text text="{CostCenter}" />
+                                                    <Text text="{Order}" />
+                                                </cells>
+                                            </ColumnListItem>
+                                        </items>
+                                    </Table>
+                                </content>
+                            </Panel>
+                        </VBox>
+                    </IconTabFilter>
+
+                    <!-- History Tab -->
+                    <IconTabFilter key="history" text="History &amp; Notes" icon="sap-icon://history">
+                        <VBox class="sapUiMediumMargin">
+                            <Panel headerText="Change History" class="sapUiResponsiveMargin">
+                                <content>
+                                    <MessageStrip text="Change history functionality will be implemented in future versions." 
+                                               type="Information" class="sapUiMediumMargin" />
+                                </content>
+                            </Panel>
+                            
+                            <Panel headerText="Notes &amp; Comments" class="sapUiResponsiveMargin">
+                                <content>
+                                    <TextArea placeholder="Add notes or comments about this purchase requisition..." 
+                                             rows="5" class="sapUiMediumMargin" width="100%" />
+                                    <HBox class="sapUiMediumMargin">
+                                        <Button text="Save Note" type="Emphasized" />
+                                        <Button text="Clear" class="sapUiTinyMarginBegin" />
+                                    </HBox>
+                                </content>
+                            </Panel>
+                        </VBox>
+                    </IconTabFilter>
+                </items>
+            </IconTabBar>
+        </f:content>
+
+        <!-- Footer -->
+        <f:footer>
+            <OverflowToolbar>
+                <ToolbarSpacer />
+                <Button text="Back" press="onNavBack" />
+                <Button text="Edit" icon="sap-icon://edit" press="onEdit" type="Emphasized" />
+                <Button text="Save as Draft" press="onSaveDraft" />
+            </OverflowToolbar>
+        </f:footer>
+    </f:DynamicPage>
+</mvc:View>

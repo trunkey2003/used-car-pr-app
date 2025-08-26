@@ -104,12 +104,34 @@
           "target": [
             "TargetView1"
           ]
+        },
+        {
+          "name": "DetailRoute",
+          "pattern": "detail/{prNumber}/{prItem}",
+          "target": [
+            "DetailTarget"
+          ]
+        },
+        {
+          "name": "notFound",
+          "pattern": "*catchallPattern",
+          "target": [
+            "notFound"
+          ]
         }
       ],
       "targets": {
         "TargetView1": {
           "id": "View1",
           "name": "View1"
+        },
+        "DetailTarget": {
+          "id": "DetailView",
+          "name": "DetailView"
+        },
+        "notFound": {
+          "id": "notFound",
+          "name": "NotFound"
         }
       }
     },
