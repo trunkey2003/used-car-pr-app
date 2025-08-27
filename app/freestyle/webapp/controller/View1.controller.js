@@ -60,7 +60,7 @@ sap.ui.define([
             oView.bindElement({
                 path: sObjectPath,
                 parameters: {
-                    $expand: "toMaterial/MaterialDescription,toPlant,toStorageLocation,toPurchasingGroup,AccountAssignments"
+                    $expand: "toMaterial,toPlant,toStorageLocation,toPurchasingGroup,AccountAssignments"
                 },
                 events: {
                     change: this._onBindingChange.bind(this),

@@ -8,14 +8,14 @@ sap.ui.define([
     "use strict";
 
     return Controller.extend("freestyle.controller.DetailView", {
-        
+
         onInit() {
             // Get the router instance
             this.oRouter = this.getOwnerComponent().getRouter();
-            
+
             // Attach pattern matched event
             this.oRouter.getRoute("DetailRoute").attachPatternMatched(this._onObjectMatched, this);
-            
+
             // Initialize view model
             const oViewModel = new JSONModel({
                 busy: false,
@@ -33,18 +33,18 @@ sap.ui.define([
             const oArguments = oEvent.getParameter("arguments");
             const sPRNumber = oArguments.prNumber;
             const sPRItem = oArguments.prItem;
-            
+
             // Validate parameters
             if (!sPRNumber || !sPRItem) {
                 console.error("Missing required parameters: prNumber or prItem");
                 this.oRouter.getTargets().display("notFound");
                 return;
             }
-            
+
             // Use standard OData v4 key syntax for composite keys
             const sObjectPath = `/PurchaseRequisition(PurchaseRequisition='${sPRNumber}',PurchaseReqnItem='${sPRItem}',IsActiveEntity=true)`;
             console.log("Binding to path:", sObjectPath);
-            
+
             this._bindView(sObjectPath);
         },
 
@@ -70,7 +70,7 @@ sap.ui.define([
                     // Bind the view to the found context
                     oView.setBindingContext(aContexts[0]);
                     oViewModel.setProperty("/busy", false);
-                    
+
                     // Update title
                     const oObject = aContexts[0].getObject();
                     if (oObject) {
@@ -102,7 +102,6 @@ sap.ui.define([
             const oView = this.getView();
             const oViewModel = oView.getModel("detailView");
 
-            // Set busy indicator
             oViewModel.setProperty("/busy", true);
 
             oView.bindElement({
@@ -113,15 +112,11 @@ sap.ui.define([
                 events: {
                     change: this._onBindingChange.bind(this),
                     dataRequested: () => {
-                        console.log("Data requested for:", sObjectPath);
                         oViewModel.setProperty("/busy", true);
                     },
                     dataReceived: (oEvent) => {
-                        const oData = oEvent.getParameter("data");
-                        console.log("Data received:", oData);
                         oViewModel.setProperty("/busy", false);
-                        
-                        // Check if data was received successfully
+                        const oData = oEvent.getParameter("data");
                         if (!oData) {
                             console.warn("No data received for binding");
                             this.oRouter.getTargets().display("notFound");
@@ -138,7 +133,7 @@ sap.ui.define([
             const oView = this.getView();
             const oElementBinding = oView.getElementBinding();
             const oViewModel = oView.getModel("detailView");
-            
+
             // No data for the binding
             if (!oElementBinding.getBoundContext()) {
                 this.oRouter.getTargets().display("notFound");
@@ -146,7 +141,7 @@ sap.ui.define([
             }
 
             const oBindingContext = oView.getBindingContext();
-            
+
             // Check if binding context and object are available
             if (!oBindingContext) {
                 console.warn("Binding context not yet available");
@@ -154,7 +149,7 @@ sap.ui.define([
             }
 
             const oObject = oBindingContext.getObject();
-            
+
             // Check if object data is available
             if (!oObject || !oObject.PurchaseRequisition) {
                 console.warn("Object data not yet available");
@@ -165,7 +160,7 @@ sap.ui.define([
             const sPRItem = oObject.PurchaseReqnItem;
 
             oViewModel.setProperty("/busy", false);
-            
+
             // Update page title dynamically
             const oDynamicPage = this.byId("dynamicPageId");
             if (oDynamicPage) {
@@ -181,7 +176,7 @@ sap.ui.define([
          */
         onNavBack() {
             const sPreviousHash = History.getInstance().getPreviousHash();
-            
+
             if (sPreviousHash !== undefined) {
                 history.go(-1);
             } else {
@@ -207,7 +202,7 @@ sap.ui.define([
 
             const sPRNumber = oObject.PurchaseRequisition;
             const sPRItem = oObject.PurchaseReqnItem;
-            
+
             MessageBox.information(`Edit functionality for PR ${sPRNumber}-${sPRItem} will be implemented in future versions.`);
         },
 
@@ -262,7 +257,7 @@ sap.ui.define([
                 error: (oError) => {
                     oViewModel.setProperty("/busy", false);
                     let sErrorMessage = "Error deleting Purchase Requisition";
-                    
+
                     if (oError && oError.responseText) {
                         try {
                             const oErrorResponse = JSON.parse(oError.responseText);
@@ -271,7 +266,7 @@ sap.ui.define([
                             sErrorMessage += ": " + oError.responseText;
                         }
                     }
-                    
+
                     MessageBox.error(sErrorMessage);
                 }
             });
@@ -334,7 +329,7 @@ sap.ui.define([
                 error: (oError) => {
                     oViewModel.setProperty("/busy", false);
                     let sErrorMessage = "Error approving Purchase Requisition";
-                    
+
                     if (oError && oError.responseText) {
                         try {
                             const oErrorResponse = JSON.parse(oError.responseText);
@@ -343,7 +338,7 @@ sap.ui.define([
                             sErrorMessage += ": " + oError.responseText;
                         }
                     }
-                    
+
                     MessageBox.error(sErrorMessage);
                 }
             });
@@ -383,13 +378,13 @@ sap.ui.define([
             if (!sDateTime) {
                 return "";
             }
-            
+
             try {
                 const oDate = new Date(sDateTime);
                 if (isNaN(oDate.getTime())) {
                     return "";
                 }
-                
+
                 // Format as locale-specific date and time
                 return oDate.toLocaleString();
             } catch (e) {
@@ -407,13 +402,13 @@ sap.ui.define([
             if (!sDate) {
                 return "";
             }
-            
+
             try {
                 const oDate = new Date(sDate);
                 if (isNaN(oDate.getTime())) {
                     return "";
                 }
-                
+
                 // Format as locale-specific date only
                 return oDate.toLocaleDateString();
             } catch (e) {
