@@ -106,6 +106,11 @@
           "pattern": "detail/{prNumber}/{prItem}",
           "name": "DetailRoute",
           "target": "DetailTarget"
+        },
+        {
+          "pattern": "detail/{prNumber}/{prItem}/material/{materialCode}",
+          "name": "MaterialDetailRoute",
+          "target": ["DetailTarget", "MaterialDetailTarget"]
         }
       ],
       "targets": {
@@ -114,6 +119,12 @@
           "name": "DetailView",
           "controlId": "fcl",
           "controlAggregation": "midColumnPages"
+        },
+        "MaterialDetailTarget": {
+          "id": "materialDetailView",
+          "name": "MaterialDetail",
+          "controlId": "fcl", 
+          "controlAggregation": "endColumnPages"
         }
       }
     },

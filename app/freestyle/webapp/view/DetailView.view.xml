@@ -108,7 +108,7 @@
                                                 columnsM="1" singleContainerFullSize="false">
                                         <form:content>
                                             <Label text="Material Code:" />
-                                            <Text text="{Material}" />
+                                            <Link text="{Material}" press="onMaterialCodePress" />
                                             
                                             <Label text="Material Description:" />
                                             <Text text="{toMaterial/MaterialDescription/MaterialDescription}" />

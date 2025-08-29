@@ -27,6 +27,10 @@ sap.ui.define([
 
             // Handle route-based FCL state
             switch (sRouteName) {
+                case "MaterialDetailRoute":
+                    console.log("Setting ThreeColumnsMidExpanded layout");
+                    this._setLayout(fioriLibrary.LayoutType.ThreeColumnsMidExpanded);
+                    break;
                 case "DetailRoute":
                     console.log("Setting TwoColumnsMidExpanded layout");
                     this._setLayout(fioriLibrary.LayoutType.TwoColumnsMidExpanded);
@@ -48,8 +52,22 @@ sap.ui.define([
 
             // If user clicked the navigation arrow, we need to navigate
             if (bIsNavigationArrow) {
-                if (sLayout === fioriLibrary.LayoutType.OneColumn) {
-                    this.oRouter.navTo("RouteView1");
+                switch (sLayout) {
+                    case fioriLibrary.LayoutType.OneColumn:
+                        this.oRouter.navTo("RouteView1");
+                        break;
+                    case fioriLibrary.LayoutType.TwoColumnsMidExpanded:
+                        // This happens when closing the end column
+                        // We need to navigate back to the detail route
+                        const sHash = this.oRouter.getHashChanger().getHash();
+                        const aMatches = sHash.match(/detail\/([^\/]+)\/([^\/]+)/);
+                        if (aMatches && aMatches.length >= 3) {
+                            this.oRouter.navTo("DetailRoute", {
+                                prNumber: aMatches[1],
+                                prItem: aMatches[2]
+                            });
+                        }
+                        break;
                 }
             }
         },
@@ -65,9 +83,10 @@ sap.ui.define([
         _clearDetailColumn() {
             const oFCL = this.byId("fcl");
             if (oFCL) {
-                // Remove all views from midColumnPages
+                // Remove all views from midColumnPages and endColumnPages
                 oFCL.removeAllMidColumnPages();
-                console.log("Cleared detail column");
+                oFCL.removeAllEndColumnPages();
+                console.log("Cleared detail columns");
             }
         },
 

@@ -1,0 +1,16 @@
+<mvc:View controllerName="freestyle.controller.MaterialDetail"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m">
+    
+    <Page title="Material Detail" showNavButton="true" navButtonPress="onCloseMaterialDetail">
+        <content>
+            <VBox class="sapUiLargeMargin">
+                <Title text="Material Detail" level="H1" />
+                <Text text="Material Code: {/Material}" class="sapUiMediumMarginTop" />
+                <Text text="PR Number: {/PurchaseRequisition}" />
+                <Text text="PR Item: {/PurchaseReqnItem}" />
+                <Button text="Close" press="onCloseMaterialDetail" class="sapUiMediumMarginTop" />
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

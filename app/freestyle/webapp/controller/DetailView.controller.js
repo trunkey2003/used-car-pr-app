@@ -142,6 +142,36 @@ sap.ui.define([
         },
 
         /**
+         * Handle material code press - navigate to material detail
+         */
+        onMaterialCodePress() {
+            const oContext = this.getView().getBindingContext();
+            if (!oContext) {
+                MessageToast.show("No material data available");
+                return;
+            }
+
+            const oObject = oContext.getObject();
+            if (!oObject || !oObject.Material) {
+                MessageToast.show("Material code not available");
+                return;
+            }
+
+            const sPRNumber = oObject.PurchaseRequisition;
+            const sPRItem = oObject.PurchaseReqnItem;
+            const sMaterialCode = oObject.Material;
+
+            console.log("Navigating to material detail:", sMaterialCode);
+
+            // Navigate to material detail route
+            this.oRouter.navTo("MaterialDetailRoute", {
+                prNumber: sPRNumber,
+                prItem: sPRItem,
+                materialCode: sMaterialCode
+            });
+        },
+
+        /**
          * Close detail view (go back to single column)
          */
         onCloseDetailPress() {
