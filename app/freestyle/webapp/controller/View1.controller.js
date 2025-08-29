@@ -1,315 +1,127 @@
 sap.ui.define([
     "sap/ui/core/mvc/Controller",
     "sap/ui/model/json/JSONModel",
+    "sap/ui/model/Filter",
+    "sap/ui/model/FilterOperator",
     "sap/m/MessageBox",
-    "sap/m/MessageToast",
-    "sap/ui/core/routing/History"
-], (Controller, JSONModel, MessageBox, MessageToast, History) => {
+    "sap/m/MessageToast"
+], (Controller, JSONModel, Filter, FilterOperator, MessageBox, MessageToast) => {
     "use strict";
 
-    return Controller.extend("freestyle.controller.DetailView", {
+    return Controller.extend("freestyle.controller.View1", {
         
         onInit() {
-            // Get the router instance
-            this.oRouter = this.getOwnerComponent().getRouter();
-            
-            // Attach pattern matched event
-            this.oRouter.getRoute("DetailRoute").attachPatternMatched(this._onObjectMatched, this);
+            console.log("View1 controller initialized");
             
             // Initialize view model
             const oViewModel = new JSONModel({
                 busy: false,
                 delay: 0,
-                mode: "display" // display, edit
+                count: 0
             });
-            this.getView().setModel(oViewModel, "detailView");
+            this.getView().setModel(oViewModel, "viewModel");
+
+            // Get router reference
+            this.oRouter = this.getOwnerComponent().getRouter();
         },
 
         /**
-         * Event handler for when the route pattern is matched
-         * @param {sap.ui.base.Event} oEvent - The route matched event
+         * Handle item press - show detail in FCL
          */
-        _onObjectMatched(oEvent) {
-            const oArguments = oEvent.getParameter("arguments");
-            const sPRNumber = oArguments.prNumber;
-            const sPRItem = oArguments.prItem;
-            
-            // Validate parameters
-            if (!sPRNumber || !sPRItem) {
-                console.error("Missing required parameters: prNumber or prItem");
-                this.oRouter.getTargets().display("notFound");
-                return;
-            }
-            
-            const sObjectPath = `/PurchaseRequisition(PurchaseRequisition='${sPRNumber}',PurchaseReqnItem='${sPRItem}',IsActiveEntity=true)`;
-            this._bindView(sObjectPath);
-        },
-
-        /**
-         * Bind the view to the specific purchase requisition
-         * @param {string} sObjectPath - The object path
-         */
-        _bindView(sObjectPath) {
-            const oView = this.getView();
-            const oModel = this.getOwnerComponent().getModel();
-            const oViewModel = oView.getModel("detailView");
-
-            // Set busy indicator
-            oViewModel.setProperty("/busy", true);
-
-            oView.bindElement({
-                path: sObjectPath,
-                parameters: {
-                    $expand: "toMaterial,toPlant,toStorageLocation,toPurchasingGroup,AccountAssignments"
-                },
-                events: {
-                    change: this._onBindingChange.bind(this),
-                    dataRequested: () => {
-                        oViewModel.setProperty("/busy", true);
-                    },
-                    dataReceived: (oEvent) => {
-                        oViewModel.setProperty("/busy", false);
-                        
-                        // Check if data was received successfully
-                        const oData = oEvent.getParameter("data");
-                        if (!oData) {
-                            console.warn("No data received for binding");
-                            this.oRouter.getTargets().display("notFound");
-                        }
-                    }
-                }
-            });
-        },
-
-        /**
-         * Event handler for binding change
-         */
-        _onBindingChange() {
-            const oView = this.getView();
-            const oElementBinding = oView.getElementBinding();
-            const oViewModel = oView.getModel("detailView");
-            
-            // No data for the binding
-            if (!oElementBinding.getBoundContext()) {
-                this.oRouter.getTargets().display("notFound");
-                return;
-            }
-
-            const oBindingContext = oView.getBindingContext();
-            
-            // Check if binding context and object are available
-            if (!oBindingContext) {
-                console.warn("Binding context not yet available");
-                return;
-            }
-
-            const oObject = oBindingContext.getObject();
-            
-            // Check if object data is available
-            if (!oObject || !oObject.PurchaseRequisition) {
-                console.warn("Object data not yet available");
-                return;
-            }
-
-            const sPRNumber = oObject.PurchaseRequisition;
-            const sPRItem = oObject.PurchaseReqnItem;
-
-            oViewModel.setProperty("/busy", false);
-            
-            // Update page title dynamically
-            const oDynamicPage = this.byId("dynamicPageId");
-            if (oDynamicPage) {
-                const oTitle = oDynamicPage.getTitle().getHeading();
-                if (oTitle) {
-                    oTitle.setText(`Purchase Requisition ${sPRNumber}-${sPRItem}`);
-                }
-            }
-        },
-
-        /**
-         * Navigate back to the main list
-         */
-        onNavBack() {
-            const sPreviousHash = History.getInstance().getPreviousHash();
-            
-            if (sPreviousHash !== undefined) {
-                history.go(-1);
-            } else {
-                this.oRouter.navTo("RouteView1", {}, true);
-            }
-        },
-
-        /**
-         * Edit the current purchase requisition
-         */
-        onEdit() {
-            const oContext = this.getView().getBindingContext();
+        onItemPress(oEvent) {
+            console.log("Item pressed");
+            const oContext = oEvent.getSource().getBindingContext();
             if (!oContext) {
-                MessageToast.show("No item selected for editing");
+                MessageToast.show("No item data available");
                 return;
             }
 
-            const oObject = oContext.getObject();
-            if (!oObject || !oObject.PurchaseRequisition) {
-                MessageToast.show("Item data not available");
-                return;
-            }
-
-            const sPRNumber = oObject.PurchaseRequisition;
-            const sPRItem = oObject.PurchaseReqnItem;
+            const sPRNumber = oContext.getProperty("PurchaseRequisition");
+            const sItem = oContext.getProperty("PurchaseReqnItem");
             
-            MessageBox.information(`Edit functionality for PR ${sPRNumber}-${sPRItem} will be implemented in future versions.`);
-        },
-
-        /**
-         * Delete the current purchase requisition
-         */
-        onDelete() {
-            const oContext = this.getView().getBindingContext();
-            if (!oContext) {
-                MessageToast.show("No item selected for deletion");
+            console.log("PR Number:", sPRNumber, "Item:", sItem);
+            
+            if (!sPRNumber || !sItem) {
+                MessageToast.show("Missing PR Number or Item data");
                 return;
             }
 
-            const oObject = oContext.getObject();
-            if (!oObject || !oObject.PurchaseRequisition) {
-                MessageToast.show("Item data not available");
-                return;
-            }
-
-            const sPRNumber = oObject.PurchaseRequisition;
-            const sPRItem = oObject.PurchaseReqnItem;
-
-            MessageBox.confirm(
-                `Are you sure you want to delete Purchase Requisition ${sPRNumber}-${sPRItem}?`,
-                {
-                    title: "Confirm Deletion",
-                    onAction: (sAction) => {
-                        if (sAction === MessageBox.Action.OK) {
-                            this._deletePurchaseRequisition(oContext);
-                        }
-                    }
-                }
-            );
-        },
-
-        /**
-         * Delete the purchase requisition
-         * @param {sap.ui.model.Context} oContext - The binding context
-         */
-        _deletePurchaseRequisition(oContext) {
-            const oModel = this.getView().getModel();
-            const oViewModel = this.getView().getModel("detailView");
-
-            oViewModel.setProperty("/busy", true);
-
-            oModel.delete(oContext.getPath(), {
-                success: () => {
-                    oViewModel.setProperty("/busy", false);
-                    MessageToast.show("Purchase Requisition deleted successfully");
-                    this.onNavBack();
-                },
-                error: (oError) => {
-                    oViewModel.setProperty("/busy", false);
-                    let sErrorMessage = "Error deleting Purchase Requisition";
-                    
-                    if (oError && oError.responseText) {
-                        try {
-                            const oErrorResponse = JSON.parse(oError.responseText);
-                            sErrorMessage += ": " + oErrorResponse.error.message;
-                        } catch (e) {
-                            sErrorMessage += ": " + oError.responseText;
-                        }
-                    }
-                    
-                    MessageBox.error(sErrorMessage);
-                }
+            // Navigate to detail route
+            this.oRouter.navTo("DetailRoute", {
+                prNumber: sPRNumber,
+                prItem: sItem
             });
         },
 
         /**
-         * Approve the purchase requisition
+         * Apply filters to the table
          */
-        onApprove() {
-            const oContext = this.getView().getBindingContext();
-            if (!oContext) {
-                MessageToast.show("No item selected for approval");
-                return;
+        onApplyFilters() {
+            MessageToast.show("Apply filters clicked");
+        },
+
+        /**
+         * Clear all filters
+         */
+        onClearFilters() {
+            MessageToast.show("Clear filters clicked");
+        },
+
+        /**
+         * Create new purchase requisition
+         */
+        onCreate() {
+            MessageBox.information("Create functionality will be implemented in future versions.");
+        },
+
+        /**
+         * Export table data
+         */
+        onExport() {
+            MessageToast.show("Export clicked");
+        },
+
+        /**
+         * Refresh table data
+         */
+        onRefresh() {
+            const oTable = this.byId("purchaseRequisitionTable");
+            if (oTable && oTable.getBinding("items")) {
+                oTable.getBinding("items").refresh();
+                MessageToast.show("Data refreshed");
             }
-
-            const oObject = oContext.getObject();
-            if (!oObject || !oObject.PurchaseRequisition) {
-                MessageToast.show("Item data not available");
-                return;
-            }
-
-            const sPRNumber = oObject.PurchaseRequisition;
-            const sPRItem = oObject.PurchaseReqnItem;
-
-            MessageBox.confirm(
-                `Are you sure you want to approve Purchase Requisition ${sPRNumber}-${sPRItem}?`,
-                {
-                    title: "Confirm Approval",
-                    onAction: (sAction) => {
-                        if (sAction === MessageBox.Action.OK) {
-                            this._approvePurchaseRequisition(oContext);
-                        }
-                    }
-                }
-            );
         },
 
         /**
-         * Approve the purchase requisition using bound action
-         * @param {sap.ui.model.Context} oContext - The binding context
+         * Edit purchase requisition
          */
-        _approvePurchaseRequisition(oContext) {
-            const oModel = this.getView().getModel();
-            const oViewModel = this.getView().getModel("detailView");
-
-            oViewModel.setProperty("/busy", true);
-
-            // Call the approve action defined in the service
-            oModel.callFunction("/approve", {
-                urlParameters: {
-                    "PurchaseRequisition": oContext.getProperty("PurchaseRequisition"),
-                    "PurchaseReqnItem": oContext.getProperty("PurchaseReqnItem")
-                },
-                success: (oData) => {
-                    oViewModel.setProperty("/busy", false);
-                    MessageToast.show("Purchase Requisition approved successfully");
-                    // Refresh the binding to show updated status
-                    oContext.getBinding().refresh();
-                },
-                error: (oError) => {
-                    oViewModel.setProperty("/busy", false);
-                    let sErrorMessage = "Error approving Purchase Requisition";
-                    
-                    if (oError && oError.responseText) {
-                        try {
-                            const oErrorResponse = JSON.parse(oError.responseText);
-                            sErrorMessage += ": " + oErrorResponse.error.message;
-                        } catch (e) {
-                            sErrorMessage += ": " + oError.responseText;
-                        }
-                    }
-                    
-                    MessageBox.error(sErrorMessage);
-                }
-            });
+        onEdit(oEvent) {
+            MessageToast.show("Edit clicked");
         },
 
         /**
-         * Save as draft
+         * Delete purchase requisition
          */
-        onSaveDraft() {
-            MessageToast.show("Save as draft functionality will be implemented in future versions.");
+        onDelete(oEvent) {
+            MessageToast.show("Delete clicked");
         },
 
         /**
-         * Format the status for display
-         * @param {string} sStatus - The status value
-         * @returns {string} The formatted status state
+         * Show sort dialog
+         */
+        onSort() {
+            MessageBox.information("Sort functionality will be implemented in future versions.");
+        },
+
+        /**
+         * Show table settings
+         */
+        onTableSettings() {
+            MessageBox.information("Table settings functionality will be implemented in future versions.");
+        },
+
+        /**
+         * Format status for display
          */
         formatStatus(sStatus) {
             switch (sStatus) {
@@ -326,8 +138,6 @@ sap.ui.define([
 
         /**
          * Format date time for display
-         * @param {string|Date} sDateTime - The date time value
-         * @returns {string} The formatted date time string
          */
         formatDateTime(sDateTime) {
             if (!sDateTime) {
@@ -340,57 +150,11 @@ sap.ui.define([
                     return "";
                 }
                 
-                // Format as locale-specific date and time
                 return oDate.toLocaleString();
             } catch (e) {
                 console.warn("Error formatting date:", e);
                 return "";
             }
-        },
-
-        /**
-         * Format date for display (date only, no time)
-         * @param {string|Date} sDate - The date value
-         * @returns {string} The formatted date string
-         */
-        formatDate(sDate) {
-            if (!sDate) {
-                return "";
-            }
-            
-            try {
-                const oDate = new Date(sDate);
-                if (isNaN(oDate.getTime())) {
-                    return "";
-                }
-                
-                // Format as locale-specific date only
-                return oDate.toLocaleDateString();
-            } catch (e) {
-                console.warn("Error formatting date:", e);
-                return "";
-            }
-        },
-
-        /**
-         * Get the resource bundle
-         * @returns {sap.ui.model.resource.ResourceModel} The resource bundle
-         */
-        getResourceBundle() {
-            return this.getOwnerComponent().getModel("i18n").getResourceBundle();
-        },
-
-        onItemPress(oEvent) {
-            const oContext = oEvent.getSource().getBindingContext();
-            const sPRNumber = oContext.getProperty("PurchaseRequisition");
-            const sItem = oContext.getProperty("PurchaseReqnItem");
-            
-            // Navigate to detail page
-            const oRouter = this.getOwnerComponent().getRouter();
-            oRouter.navTo("DetailRoute", {
-                prNumber: sPRNumber,
-                prItem: sItem
-            });
-        },
+        }
     });
 });

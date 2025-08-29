@@ -49,6 +49,7 @@
       "libs": {
         "sap.m": {},
         "sap.ui.core": {},
+        "sap.f": {},
         "sap.ui.export": {},
         "sap.suite.ui.commons": {}
       }
@@ -87,49 +88,32 @@
     "routing": {
       "config": {
         "routerClass": "sap.m.routing.Router",
-        "controlAggregation": "pages",
-        "controlId": "app",
-        "transition": "slide",
         "type": "View",
         "viewType": "XML",
         "path": "freestyle.view",
+        "controlId": "fcl",
+        "controlAggregation": "midColumnPages",
+        "transition": "slide",
         "async": true
       },
       "routes": [
         {
+          "pattern": "",
           "name": "RouteView1",
-          "pattern": ":?query:",
-          "target": [
-            "TargetView1"
-          ]
+          "target": []
         },
         {
-          "name": "DetailRoute",
           "pattern": "detail/{prNumber}/{prItem}",
-          "target": [
-            "DetailTarget"
-          ]
-        },
-        {
-          "name": "notFound",
-          "pattern": "*catchallPattern",
-          "target": [
-            "notFound"
-          ]
+          "name": "DetailRoute",
+          "target": "DetailTarget"
         }
       ],
       "targets": {
-        "TargetView1": {
-          "id": "View1",
-          "name": "View1"
-        },
         "DetailTarget": {
-          "id": "DetailView",
-          "name": "DetailView"
-        },
-        "notFound": {
-          "id": "notFound",
-          "name": "NotFound"
+          "id": "detailView", 
+          "name": "DetailView",
+          "controlId": "fcl",
+          "controlAggregation": "midColumnPages"
         }
       }
     },

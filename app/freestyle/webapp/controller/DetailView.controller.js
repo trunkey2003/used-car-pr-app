@@ -3,8 +3,8 @@ sap.ui.define([
     "sap/ui/model/json/JSONModel",
     "sap/m/MessageBox",
     "sap/m/MessageToast",
-    "sap/ui/core/routing/History"
-], (Controller, JSONModel, MessageBox, MessageToast, History) => {
+    "sap/f/library"
+], (Controller, JSONModel, MessageBox, MessageToast, fioriLibrary) => {
     "use strict";
 
     return Controller.extend("freestyle.controller.DetailView", {
@@ -13,20 +13,21 @@ sap.ui.define([
             // Get the router instance
             this.oRouter = this.getOwnerComponent().getRouter();
 
-            // Attach pattern matched event
+            // Attach pattern matched event for direct URL access
             this.oRouter.getRoute("DetailRoute").attachPatternMatched(this._onObjectMatched, this);
 
             // Initialize view model
             const oViewModel = new JSONModel({
                 busy: false,
                 delay: 0,
-                mode: "display" // display, edit
+                mode: "display", // display, edit
+                showCloseColumn: false
             });
             this.getView().setModel(oViewModel, "detailView");
         },
 
         /**
-         * Event handler for when the route pattern is matched
+         * Event handler for when the route pattern is matched (direct URL access)
          * @param {sap.ui.base.Event} oEvent - The route matched event
          */
         _onObjectMatched(oEvent) {
@@ -37,61 +38,23 @@ sap.ui.define([
             // Validate parameters
             if (!sPRNumber || !sPRItem) {
                 console.error("Missing required parameters: prNumber or prItem");
-                this.oRouter.getTargets().display("notFound");
                 return;
             }
 
+            this.bindDetailData(sPRNumber, sPRItem);
+        },
+
+        /**
+         * Bind detail data - can be called from route or from master list
+         * @param {string} sPRNumber - PR Number
+         * @param {string} sPRItem - PR Item
+         */
+        bindDetailData(sPRNumber, sPRItem) {
             // Use standard OData v4 key syntax for composite keys
             const sObjectPath = `/PurchaseRequisition(PurchaseRequisition='${sPRNumber}',PurchaseReqnItem='${sPRItem}',IsActiveEntity=true)`;
             console.log("Binding to path:", sObjectPath);
 
             this._bindView(sObjectPath);
-        },
-
-        /**
-         * Alternative binding method using filters
-         * @param {string} sPath - The entity set path
-         * @param {sap.ui.model.Filter} oFilter - The filter to apply
-         */
-        _bindViewWithFilter(sPath, oFilter) {
-            const oView = this.getView();
-            const oModel = this.getOwnerComponent().getModel();
-            const oViewModel = oView.getModel("detailView");
-
-            oViewModel.setProperty("/busy", true);
-
-            // Create a list binding to get the single item
-            const oListBinding = oModel.bindList(sPath, null, null, [oFilter], {
-                $expand: "toMaterial,toPlant,toStorageLocation,toPurchasingGroup"
-            });
-
-            oListBinding.requestContexts(0, 1).then((aContexts) => {
-                if (aContexts && aContexts.length > 0) {
-                    // Bind the view to the found context
-                    oView.setBindingContext(aContexts[0]);
-                    oViewModel.setProperty("/busy", false);
-
-                    // Update title
-                    const oObject = aContexts[0].getObject();
-                    if (oObject) {
-                        const oDynamicPage = this.byId("dynamicPageId");
-                        if (oDynamicPage) {
-                            const oTitle = oDynamicPage.getTitle().getHeading();
-                            if (oTitle) {
-                                oTitle.setText(`Purchase Requisition ${oObject.PurchaseRequisition}-${oObject.PurchaseReqnItem}`);
-                            }
-                        }
-                    }
-                } else {
-                    oViewModel.setProperty("/busy", false);
-                    console.warn("No matching purchase requisition found");
-                    this.oRouter.getTargets().display("notFound");
-                }
-            }).catch((oError) => {
-                oViewModel.setProperty("/busy", false);
-                console.error("Error binding purchase requisition:", oError);
-                this.oRouter.getTargets().display("notFound");
-            });
         },
 
         /**
@@ -119,7 +82,7 @@ sap.ui.define([
                         const oData = oEvent.getParameter("data");
                         if (!oData) {
                             console.warn("No data received for binding");
-                            this.oRouter.getTargets().display("notFound");
+                            MessageToast.show("Purchase Requisition not found");
                         }
                     }
                 }
@@ -135,8 +98,8 @@ sap.ui.define([
             const oViewModel = oView.getModel("detailView");
 
             // No data for the binding
-            if (!oElementBinding.getBoundContext()) {
-                this.oRouter.getTargets().display("notFound");
+            if (!oElementBinding || !oElementBinding.getBoundContext()) {
+                MessageToast.show("Purchase Requisition not found");
                 return;
             }
 
@@ -162,6 +125,13 @@ sap.ui.define([
             oViewModel.setProperty("/busy", false);
 
             // Update page title dynamically
+            this._updatePageTitle(sPRNumber, sPRItem);
+        },
+
+        /**
+         * Update page title
+         */
+        _updatePageTitle(sPRNumber, sPRItem) {
             const oDynamicPage = this.byId("dynamicPageId");
             if (oDynamicPage) {
                 const oTitle = oDynamicPage.getTitle().getHeading();
@@ -172,16 +142,17 @@ sap.ui.define([
         },
 
         /**
-         * Navigate back to the main list
+         * Close detail view (go back to single column)
+         */
+        onCloseDetailPress() {
+            this.oRouter.navTo("RouteView1", {}, true);
+        },
+
+        /**
+         * Navigate back - now just closes the detail panel
          */
         onNavBack() {
-            const sPreviousHash = History.getInstance().getPreviousHash();
-
-            if (sPreviousHash !== undefined) {
-                history.go(-1);
-            } else {
-                this.oRouter.navTo("RouteView1", {}, true);
-            }
+            this.onCloseDetailPress();
         },
 
         /**
@@ -252,7 +223,7 @@ sap.ui.define([
                 success: () => {
                     oViewModel.setProperty("/busy", false);
                     MessageToast.show("Purchase Requisition deleted successfully");
-                    this.onNavBack();
+                    this.onCloseDetailPress(); // Close detail panel after deletion
                 },
                 error: (oError) => {
                     oViewModel.setProperty("/busy", false);
@@ -418,11 +389,20 @@ sap.ui.define([
         },
 
         /**
+         * Update close column button visibility
+         */
+        updateCloseColumnButton(sLayout) {
+            const oViewModel = this.getView().getModel("detailView");
+            const bShowCloseColumn = sLayout !== fioriLibrary.LayoutType.OneColumn;
+            oViewModel.setProperty("/showCloseColumn", bShowCloseColumn);
+        },
+
+        /**
          * Get the resource bundle
          * @returns {sap.ui.model.resource.ResourceModel} The resource bundle
          */
         getResourceBundle() {
             return this.getOwnerComponent().getModel("i18n").getResourceBundle();
         }
-    });
+    })
 });

@@ -1,7 +1,14 @@
 <mvc:View controllerName="freestyle.controller.App"
     displayBlock="true"
     xmlns:mvc="sap.ui.core.mvc"
-    xmlns="sap.m">
-    <App id="app">
-    </App>
+    xmlns="sap.m"
+    xmlns:f="sap.f">
+    
+    <Shell>
+        <f:FlexibleColumnLayout id="fcl" stateChange="onStateChanged" layout="OneColumn" backgroundDesign="Solid">
+            <f:beginColumnPages>
+                <mvc:XMLView viewName="freestyle.view.View1" id="masterView" />
+            </f:beginColumnPages>
+        </f:FlexibleColumnLayout>
+    </Shell>
 </mvc:View>

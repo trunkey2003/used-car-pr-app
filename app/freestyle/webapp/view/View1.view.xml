@@ -48,7 +48,7 @@
 
             <!-- Toolbar with Actions -->
             <Toolbar>
-                <Title text="Purchase Requisitions ({/count})" />
+                <Title text="Purchase Requisitions" />
                 <ToolbarSpacer />
                 <Button text="Create" icon="sap-icon://add" press="onCreate" type="Emphasized" />
                 <Button text="Export" icon="sap-icon://excel-attachment" press="onExport" />
@@ -57,11 +57,18 @@
 
             <!-- Main Table -->
             <Table id="purchaseRequisitionTable" 
-                   items="{path: '/PurchaseRequisition', sorter: {path: 'createdAt', descending: true}}"
+                   items="{
+                       path: '/PurchaseRequisition',
+                       parameters: {
+                           $expand: 'toMaterial($expand=MaterialDescription)',
+                           $orderby: 'createdAt desc'
+                       }
+                   }"
                    growing="true"
                    growingThreshold="50"
                    mode="SingleSelect"
-                   class="sapUiResponsiveMargin">
+                   class="sapUiResponsiveMargin"
+                   itemPress="onItemPress">
                 
                 <headerToolbar>
                     <Toolbar>
@@ -118,26 +125,16 @@
                                 <Text text="{toMaterial/MaterialDescription/MaterialDescription}" class="sapUiContentPadding" />
                             </VBox>
                             <Text text="{Plant}" />
-                            <ObjectNumber number="{
-                                path: 'Quantity',
-                                type: 'sap.ui.model.odata.type.Decimal',
-                                formatOptions: { minFractionDigits: 2, maxFractionDigits: 3 }
-                            }" />
+                            <ObjectNumber number="{Quantity}" />
                             <Text text="{BaseUnit}" />
-                            <Text text="{
-                                path: 'DeliveryDate',
-                                type: 'sap.ui.model.odata.type.Date'
-                            }" />
+                            <Text text="{DeliveryDate}" />
                             <ObjectStatus text="{ReleaseStatus}" 
                                          state="{
                                             path: 'ReleaseStatus',
                                             formatter: '.formatStatus'
                                          }" />
                             <Text text="{Requisitioner}" />
-                            <Text text="{
-                                path: 'createdAt',
-                                formatter: '.formatDateTime'
-                            }" />
+                            <Text text="{createdAt}" />
                             <HBox>
                                 <Button icon="sap-icon://edit" press="onEdit" type="Transparent" tooltip="Edit" />
                                 <Button icon="sap-icon://delete" press="onDelete" type="Transparent" tooltip="Delete" />
